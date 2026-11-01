@@ -1,0 +1,36 @@
+
+SENTINELX - LSTM WORLD MODEL TRAINING REPORT
+
+Model: SentinelXLSTM
+Framework: PyTorch 2.5.1+cu118
+Device: cuda
+
+Architecture:
+Input sequence: 10 x 206
+LSTM hidden units: 128
+LSTM layers: 1
+Dropout: 0.2
+Output features: 206
+
+Training:
+Training sequences: 68655
+Validation sequences: 14711
+Batch size: 64
+Maximum epochs: 30
+Early stopping patience: 6
+Optimizer: AdamW
+Loss: Huber Loss
+
+Results:
+Best epoch: 2
+Best validation Huber loss: 0.19770733
+Total training time: 308.83 seconds
+
+The test dataset was not used during training or model selection.
+
+Objective:
+Predict the next network state from the previous
+10 network states.
+
+Checkpoint:
+F:\Projects\SentinelX\Models\lstm_world_model_v1\best_model.pt

@@ -1,0 +1,39 @@
+
+SENTINELX - LSTM WORLD MODEL TEST EVALUATION
+
+Checkpoint: F:\Projects\SentinelX\Models\lstm_world_model_v1\best_model.pt
+Checkpoint epoch: 2
+Device: cuda
+
+TEST DATA:
+Sequences: 14722
+Sequence length: 10
+Features: 206
+
+LSTM TEST METRICS:
+{'huber': np.float64(0.21830453201329583), 'mae': np.float64(0.48514622258580714), 'rmse': np.float64(0.7337589163856233)}
+
+PERSISTENCE BASELINE METRICS:
+{'huber': np.float64(0.3231468004455153), 'mae': np.float64(0.5683871244301308), 'rmse': np.float64(0.9478763955201567)}
+
+IMPROVEMENT OVER BASELINE:
+Huber: 32.4442%
+MAE: 14.6451%
+RMSE: 22.5892%
+
+PER-LABEL RESULTS:
+Benign: 4954 sequences
+  LSTM: {'huber': np.float64(0.2455836988370203), 'mae': np.float64(0.5254193669932514), 'rmse': np.float64(0.7829859212608613)}
+  Persistence: {'huber': np.float64(0.36485619204284814), 'mae': np.float64(0.6224997644966334), 'rmse': np.float64(1.0194468930726244)}
+Bot: 9768 sequences
+  LSTM: {'huber': np.float64(0.20446945907669356), 'mae': np.float64(0.46472104267236747), 'rmse': np.float64(0.7074847541955519)}
+  Persistence: {'huber': np.float64(0.30199320442041433), 'mae': np.float64(0.540943019302218), 'rmse': np.float64(0.9094281072959728)}
+
+
+IMPORTANT:
+Metrics are calculated in preprocessed feature space.
+The persistence baseline predicts the next state as the
+last observed input state.
+
+This test evaluates next-state numerical prediction.
+It does not establish attack detection accuracy.

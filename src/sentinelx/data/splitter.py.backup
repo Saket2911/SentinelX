@@ -1,0 +1,51 @@
+
+import pandas as pd
+
+
+def split_dataset(
+    df: pd.DataFrame,
+    train_ratio: float = 0.70,
+    validation_ratio: float = 0.15,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Split chronologically, targeting row ratios while keeping
+    identical timestamps in the same partition."""
+
+    if "Timestamp" not in df.columns:
+        raise ValueError("Dataset must contain a Timestamp column.")
+
+    if df.empty or df["Timestamp"].isna().any():
+        raise ValueError("Dataset is empty or has invalid timestamps.")
+
+    if not (0 < train_ratio < 1):
+        raise ValueError("train_ratio must be between 0 and 1.")
+
+    if not (0 < validation_ratio < 1):
+        raise ValueError("validation_ratio must be between 0 and 1.")
+
+    if train_ratio + validation_ratio >= 1:
+        raise ValueError("The ratios must sum to less than 1.")
+
+    df = df.sort_values("Timestamp", kind="stable").reset_index(drop=True)
+
+    n = len(df)
+    train_target = int(n * train_ratio)
+    validation_target = int(n * (train_ratio + validation_ratio))
+
+    # Use row-count targets to choose timestamp boundaries.
+    train_cutoff = df.iloc[train_target]["Timestamp"]
+    validation_cutoff = df.iloc[validation_target]["Timestamp"]
+
+    if train_cutoff >= validation_cutoff:
+        raise ValueError("Unable to create distinct time boundaries.")
+
+    train_df = df[df["Timestamp"] < train_cutoff].copy()
+    validation_df = df[
+        (df["Timestamp"] >= train_cutoff)
+        & (df["Timestamp"] < validation_cutoff)
+    ].copy()
+    test_df = df[df["Timestamp"] >= validation_cutoff].copy()
+
+    if min(len(train_df), len(validation_df), len(test_df)) == 0:
+        raise ValueError("One of the resulting splits is empty.")
+
+    return train_df, validation_df, test_df

@@ -1,0 +1,206 @@
+
+
+import numpy as np
+import pandas as pd
+
+METADATA_COLUMNS = {"Timestamp", "Label"}
+
+
+
+def build_network_states(
+    df: pd.DataFrame,
+    window: str = "1s",
+    max_gap_seconds: int = 8,
+) -> pd.DataFrame:
+    """Aggregate flow records into states without filling long gaps."""
+
+    if df.empty:
+        raise ValueError("Cannot build states from an empty dataset.")
+
+    if not {"Timestamp", "Label"}.issubset(df.columns):
+        raise ValueError("Dataset must contain Timestamp and Label.")
+
+    if max_gap_seconds < 1:
+        raise ValueError("max_gap_seconds must be at least 1.")
+
+    feature_columns = [
+        c for c in df.columns if c not in {"Timestamp", "Label"}
+    ]
+    if not feature_columns:
+        raise ValueError("No numerical flow features found.")
+
+    work = df[["Timestamp", "Label"] + feature_columns].copy()
+    work["Timestamp"] = pd.to_datetime(work["Timestamp"])
+
+    if work["Timestamp"].isna().any() or work["Label"].isna().any():
+        raise ValueError("Missing timestamps or labels found.")
+
+    if not all(
+        pd.api.types.is_numeric_dtype(work[c])
+        for c in feature_columns
+    ):
+        raise ValueError("All flow features must be numerical.")
+
+    work[feature_columns] = work[feature_columns].replace(
+        [np.inf, -np.inf], np.nan
+    )
+    work["_window"] = work["Timestamp"].dt.floor(window)
+
+    aggregated = work.groupby("_window")[feature_columns].agg(
+        ["mean", "std", "max"]
+    )
+    aggregated.columns = [
+        f"{feature}__{stat}"
+        for feature, stat in aggregated.columns
+    ]
+    aggregated.index.name = "Timestamp"
+
+    observed = pd.DatetimeIndex(
+        work["_window"].unique()
+    ).sort_values()
+
+    gap_seconds = observed.to_series().diff().dt.total_seconds()
+    segment_ids = (
+        gap_seconds > max_gap_seconds
+    ).cumsum().to_numpy()
+
+    label_groups = work.groupby("_window")["Label"]
+
+    def summarize_label(labels):
+        attacks = sorted({
+            str(label)
+            for label in labels
+            if str(label).strip().lower() != "benign"
+        })
+        if not attacks:
+            return "Benign"
+        if len(attacks) == 1:
+            return attacks[0]
+        return "MIXED_ATTACK"
+
+    window_labels = label_groups.apply(summarize_label)
+    flow_counts = work.groupby("_window").size()
+
+    state_parts = []
+
+    for segment_id in np.unique(segment_ids):
+        segment_times = observed[segment_ids == segment_id]
+
+        full_index = pd.date_range(
+            segment_times.min(),
+            segment_times.max(),
+            freq=window,
+            name="Timestamp",
+        )
+
+        segment_states = aggregated.reindex(full_index).fillna(0.0)
+
+        counts = flow_counts.reindex(
+            full_index, fill_value=0
+        ).astype(np.float32)
+
+        labels = window_labels.reindex(full_index).fillna("NO_FLOWS")
+
+        # Add metadata together rather than inserting columns repeatedly.
+        metadata = pd.DataFrame({
+            "Flow Count": counts.to_numpy(),
+            "Label": labels.to_numpy(),
+            "Segment ID": np.full(
+                len(full_index), int(segment_id), dtype=np.int32
+            ),
+            "Has Flows": (counts.to_numpy() > 0).astype(np.float32),
+        }, index=full_index)
+
+        segment_states = pd.concat(
+            [segment_states, metadata], axis=1
+        )
+        state_parts.append(segment_states)
+
+    combined = pd.concat(state_parts)
+    timestamp_column = pd.DataFrame({
+        "Timestamp": combined.index.to_numpy()
+    })
+    combined = combined.reset_index(drop=True)
+
+    states = pd.concat(
+        [timestamp_column, combined], axis=1
+    ).copy()
+
+    return states
+
+
+
+
+
+def make_sequences(
+    states: pd.DataFrame,
+    sequence_length: int = 10,
+):
+    """
+    Predict the next network state from previous states.
+
+    Sequences are constructed within each Segment ID so they
+    cannot cross long gaps in the observed timeline.
+    """
+
+    if sequence_length < 1:
+        raise ValueError("sequence_length must be at least 1.")
+
+    required = {"Timestamp", "Label", "Segment ID"}
+    if not required.issubset(states.columns):
+        raise ValueError(
+            f"Required columns missing: {sorted(required - set(states.columns))}"
+        )
+
+    feature_columns = [
+        c for c in states.columns
+        if c not in {"Timestamp", "Label", "Segment ID"}
+    ]
+
+    if not feature_columns:
+        raise ValueError("No numerical state features found.")
+
+    X_parts = []
+    y_parts = []
+    timestamp_parts = []
+    label_parts = []
+
+    for _, segment in states.groupby("Segment ID", sort=False):
+        segment = segment.sort_values("Timestamp", kind="stable")
+
+        values = segment[feature_columns].to_numpy(dtype=np.float32)
+
+        if not np.isfinite(values).all():
+            raise ValueError(
+                "State features contain NaN or infinite values."
+            )
+
+        if len(segment) <= sequence_length:
+            continue
+
+        for i in range(len(segment) - sequence_length):
+            X_parts.append(values[i:i + sequence_length])
+            y_parts.append(values[i + sequence_length])
+
+        timestamp_parts.extend(
+            segment["Timestamp"].iloc[sequence_length:].to_list()
+        )
+        label_parts.extend(
+            segment["Label"].iloc[sequence_length:].to_list()
+        )
+
+    if not X_parts:
+        raise ValueError(
+            "No sequences could be created. Check segment lengths."
+        )
+
+    X = np.stack(X_parts).astype(np.float32)
+    y = np.stack(y_parts).astype(np.float32)
+
+    return (
+        X,
+        y,
+        np.asarray(timestamp_parts),
+        np.asarray(label_parts),
+        feature_columns,
+    )
