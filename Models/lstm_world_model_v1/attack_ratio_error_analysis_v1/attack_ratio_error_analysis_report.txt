@@ -1,0 +1,52 @@
+SENTINELX - ATTACK FLOW RATIO VS PREDICTION ERROR
+=================================================================
+
+Purpose:
+Describe how next-state prediction error varies with the
+proportion of attack-labelled flows in each target second.
+
+Ratio groups:
+No flows
+0% (Benign-only)
+(0%, 10%]
+(10%, 25%]
+(25%, 50%]
+(50%, 100%]
+
+VALIDATION RESULTS
+-----------------------------------------------------------------
+Prediction rows: 14,711
+Unmatched composition timestamps: 1
+
+   Traffic Group  State_Count  Mean_MAE  Median_MAE  P90_MAE  Mean_Attack_Flow_Ratio  Mean_Flow_Count
+        No flows            1  1.851949    1.851949 1.851949                0.000000         0.000000
+0% (Benign-only)         6225  0.482799    0.455962 0.657729                0.000000        24.788916
+       (0%, 10%]          248  0.418771    0.370349 0.633104                0.078082        95.612903
+      (10%, 25%]         1571  0.457325    0.421803 0.682243                0.187152        46.352005
+      (25%, 50%]         4403  0.426178    0.396644 0.630899                0.375345        29.287304
+     (50%, 100%]         2263  0.422627    0.392611 0.613113                0.650193        40.965974
+
+TEST RESULTS
+-----------------------------------------------------------------
+Prediction rows: 14,722
+Unmatched composition timestamps: 0
+
+   Traffic Group  State_Count  Mean_MAE  Median_MAE  P90_MAE  Mean_Attack_Flow_Ratio  Mean_Flow_Count
+        No flows          NaN       NaN         NaN      NaN                     NaN              NaN
+0% (Benign-only)       4954.0  0.525419    0.497020 0.740251                0.000000        26.530884
+       (0%, 10%]        791.0  0.448333    0.410158 0.675268                0.064906        74.265487
+      (10%, 25%]       2389.0  0.473615    0.439223 0.690550                0.181313        38.755546
+      (25%, 50%]       3886.0  0.448186    0.416909 0.668545                0.375919        31.372362
+     (50%, 100%]       2702.0  0.485436    0.465852 0.681130                0.672005        43.044041
+
+INTERPRETATION CAUTIONS
+-----------------------------------------------------------------
+1. Validation and test results are reported separately.
+2. This is descriptive analysis, not threshold tuning.
+3. A higher attack-flow ratio does not automatically mean
+   higher prediction error.
+4. Attack-flow ratio is derived from dataset ground-truth labels.
+   It is used only for retrospective analysis, never as an
+   input feature for the LSTM.
+5. Test results must not be used to select model settings.
+6. These results do not establish early attack detection.

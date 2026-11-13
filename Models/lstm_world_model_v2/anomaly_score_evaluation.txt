@@ -1,0 +1,24 @@
+SENTINELX — WORLD MODEL ANOMALY SCORE EVALUATION
+===========================================================================
+Checkpoint epoch: 8
+Device: cuda
+
+Thresholds calibrated using validation Benign samples only:
+95th percentile: 1.4863528013
+99th percentile: 1.8948515654
+
+TEST SCORE DISTRIBUTIONS:
+   Label  Samples     Mean   Median      P95      P99
+  Benign    11189 0.315425 0.289977 0.544486 0.736544
+     Bot    20216 0.315291 0.293335 0.526116 0.683393
+NO_FLOWS        1 2.075760 2.075760 2.075760 2.075760
+
+TEST DETECTION RESULTS:
+ threshold  TP    FN  FP    TN  Bot detection rate  Benign false positive rate  Precision  F1  Threshold type
+  1.486353   0 20216   4 11185                 0.0                    0.035749        0.0 0.0 95th percentile
+  1.894852   0 20216   0 11189                 0.0                    0.000000        0.0 0.0 99th percentile
+
+Bot is treated as the positive class.
+Benign is treated as the negative class.
+NO_FLOWS and other labels are excluded from binary metrics.
+No model training or checkpoint modification performed.

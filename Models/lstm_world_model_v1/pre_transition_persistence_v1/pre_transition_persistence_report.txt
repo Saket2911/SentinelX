@@ -1,0 +1,37 @@
+SENTINELX PRE-TRANSITION LABEL PERSISTENCE ANALYSIS
+======================================================================
+
+Test states: 14722
+Future transitions: 389
+
+Origins are grouped by time until their next future transition.
+Only transitions within the same segment are considered.
+The prediction repeats the origin label.
+
+ Horizon_Seconds Time_Until_Next_Transition  Samples  Accuracy  Balanced_Accuracy  Bot_Precision  Bot_Recall   Bot_F1  Benign_Recall   TN  FP  FN   TP
+               1                1-5 seconds      431  0.097448           0.094038       0.149123    0.148472 0.148796       0.039604    8 194 195   34
+               1               6-10 seconds       50  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000   10   0   0   40
+               1              11-30 seconds      200  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000   40   0   0  160
+               1            Over 30 seconds    11260  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000 4701   0   0 6559
+               2                1-5 seconds      431  0.944316           0.944376       0.951754    0.943478 0.947598       0.945274  190  11  13  217
+               2               6-10 seconds       50  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000   10   0   0   40
+               2              11-30 seconds      200  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000   40   0   0  160
+               2            Over 30 seconds    11260  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000 4701   0   0 6559
+               5                1-5 seconds      431  0.097448           0.092405       0.157895    0.154506 0.156182       0.030303    6 192 197   36
+               5               6-10 seconds       50  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000   10   0   0   40
+               5              11-30 seconds      200  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000   40   0   0  160
+               5            Over 30 seconds    11260  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000 4701   0   0 6559
+              10                1-5 seconds      431  0.805104           0.810625       0.877193    0.781250 0.826446       0.840000  147  28  56  200
+              10               6-10 seconds       50  0.320000           0.353896       0.350000    0.636364 0.451613       0.071429    2  26   8   14
+              10              11-30 seconds      200  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000   40   0   0  160
+              10            Over 30 seconds    11260  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000 4701   0   0 6559
+              30                1-5 seconds      431  0.621810           0.644340       0.855263    0.600000 0.705244       0.688679   73  33 130  195
+              30               6-10 seconds       50  0.420000           0.395330       0.475000    0.703704 0.567164       0.086957    2  21   8   19
+              30              11-30 seconds      200  0.430000           0.411682       0.475000    0.716981 0.571429       0.106383   10  84  30   76
+              30            Over 30 seconds    11260  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000 4701   0   0 6559
+
+IMPORTANT:
+This is a descriptive label-persistence experiment.
+It is not LSTM performance or attack-warning performance.
+Some origins may contribute to multiple horizon evaluations.
+The lead-time groups are based on the observed future timeline.

@@ -1,0 +1,33 @@
+SENTINELX TRANSITION-CONDITIONED LABEL PERSISTENCE
+======================================================================
+
+Test states: 14722
+Label/segment transitions: 389
+Near-transition window: 5 seconds from transition
+Near-transition states: 491
+Away-from-transition states: 14231
+
+METRICS
+----------------------------------------------------------------------
+ Horizon_Seconds                Group  Samples  Accuracy  Balanced_Accuracy  Bot_Precision  Bot_Recall   Bot_F1  Benign_Recall   TN  FP  FN   TP
+               1      Near_Transition      491  0.207739           0.189131       0.312057    0.310954 0.311504       0.067308   14 194 195   88
+               1 Away_From_Transition    14230  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000 4745   0   0 9485
+               2      Near_Transition      491  0.951120           0.950543       0.960993    0.954225 0.957597       0.946860  196  11  13  271
+               2 Away_From_Transition    14229  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000 4745   0   0 9484
+               5      Near_Transition      491  0.207739           0.186206       0.319149    0.313589 0.316344       0.058824   12 192 197   90
+               5 Away_From_Transition    14226  1.000000           1.000000       1.000000    1.000000 1.000000       1.000000 4745   0   0 9481
+              10      Near_Transition      491  0.828921           0.832329       0.900709    0.819355 0.858108       0.845304  153  28  56  254
+              10 Away_From_Transition    14221  0.997609           0.996848       0.997256    0.999154 0.998204       0.994541 4737  26   8 9450
+              30      Near_Transition      491  0.657841           0.670013       0.882979    0.648438 0.747748       0.691589   74  33 135  249
+              30 Away_From_Transition    14201  0.990282           0.987343       0.988896    0.996483 0.992675       0.978202 4712 105  33 9351
+
+INTERPRETATION
+----------------------------------------------------------------------
+The persistence predictor repeats the label at the origin state.
+Near-transition and away-from-transition groups are defined
+using the origin state's distance to the nearest transition.
+The near-transition group may include origins immediately before
+or after a transition.
+This is a label-persistence diagnostic, not LSTM performance
+and not a real-world attack-detection evaluation.
+The five-second window is an analysis choice, not a learned threshold.

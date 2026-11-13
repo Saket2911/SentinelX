@@ -1,0 +1,40 @@
+
+SENTINELX — LSTM WORLD MODEL V2
+================================
+
+ARCHITECTURE
+------------
+Input features: 212
+Sequence length: 10
+Hidden size: 128
+LSTM layers: 1
+Dropout: 0.2
+Output features: 212
+
+TRAINING
+--------
+Training samples: 197389
+Validation samples: 50870
+Batch size: 32
+Optimizer: AdamW
+Initial learning rate: 0.001
+Loss: HuberLoss
+Maximum epochs: 30
+Early stopping patience: 6
+
+RESULTS
+-------
+Best epoch: 8
+Best validation Huber loss: 0.42561093
+Training time: 1009.23 seconds
+
+TEST DATA
+---------
+Test data was not loaded or evaluated during training.
+
+CHECKPOINT
+----------
+best_model.pt
+
+This model predicts the next numerical network state.
+Its regression metrics are not attack detection accuracy.

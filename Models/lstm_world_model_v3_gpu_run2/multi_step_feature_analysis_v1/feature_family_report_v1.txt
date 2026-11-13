@@ -1,0 +1,67 @@
+SENTINELX V3 — FEATURE-FAMILY FORECASTING ANALYSIS
+===========================================================================
+Model features: 209
+Original features: 71
+Feature families: 6
+Aggregation types: mean, std, max
+Metric aggregation: macro-average across features in each family
+Evaluation: recursive multi-step forecasting
+Metrics: preprocessed model feature space
+Test data was previously used in exploratory evaluation.
+These results are not an untouched independent test evaluation.
+
+===========================================================================
+HORIZON: 1 seconds
+===========================================================================
+ Horizon_Seconds                        Feature_Family  Feature_Count  LSTM_Better_Count  Persistence_Better_Count  Equal_Count  Zero_Persistence_MAE_Count  LSTM_Mean_MAE  Persistence_Mean_MAE  MAE_Improvement_Percent  LSTM_Mean_RMSE  Persistence_Mean_RMSE  RMSE_Improvement_Percent  LSTM_Mean_Huber  Persistence_Mean_Huber
+               1                Packet and flow counts             22                 22                         0            0                           0       0.291224              0.363327                19.845038        0.500623               0.638789                 21.629324         0.103071                0.159301
+               1            Packet lengths and headers             63                 42                        21            0                           0       0.263452              0.273680                 3.737109        0.357662               0.437863                 18.316283         0.084197                0.114312
+               1 Protocol and network-state indicators             16                 13                         3            0                           0       0.257292              0.277635                 7.327200        0.386169               0.476425                 18.944283         0.084110                0.122783
+               1                  Rates and throughput             12                 12                         0            0                           0       0.430128              0.492036                12.582030        0.581689               0.736316                 21.000080         0.156310                0.231018
+               1                             TCP flags             27                  7                        20            0                           3       0.374782              0.347977                -7.703101        0.525186               0.632172                 16.923491         0.159676                0.202378
+               1                                Timing             69                 69                         0            0                           0       0.356741              0.427217                16.496466        0.521985               0.694108                 24.797673         0.146692                0.233384
+
+===========================================================================
+HORIZON: 2 seconds
+===========================================================================
+ Horizon_Seconds                        Feature_Family  Feature_Count  LSTM_Better_Count  Persistence_Better_Count  Equal_Count  Zero_Persistence_MAE_Count  LSTM_Mean_MAE  Persistence_Mean_MAE  MAE_Improvement_Percent  LSTM_Mean_RMSE  Persistence_Mean_RMSE  RMSE_Improvement_Percent  LSTM_Mean_Huber  Persistence_Mean_Huber
+               2                Packet and flow counts             22                 21                         1            0                           0       0.297334              0.379118                21.572195        0.516248               0.657070                 21.431777         0.109084                0.169901
+               2            Packet lengths and headers             63                 48                        15            0                           0       0.271439              0.290755                 6.643463        0.369200               0.455191                 18.891215         0.089865                0.125168
+               2 Protocol and network-state indicators             16                 13                         3            0                           0       0.264723              0.295566                10.435316        0.395029               0.500773                 21.116228         0.088567                0.134657
+               2                  Rates and throughput             12                 12                         0            0                           0       0.438976              0.515615                14.863541        0.591471               0.762951                 22.475827         0.161624                0.247005
+               2                             TCP flags             27                 13                        14            0                           3       0.389343              0.373301                -4.297146        0.548325               0.662058                 17.178710         0.173900                0.221636
+               2                                Timing             69                 69                         0            0                           0       0.363892              0.447770                18.732459        0.531558               0.711737                 25.315332         0.152708                0.246939
+
+===========================================================================
+HORIZON: 5 seconds
+===========================================================================
+ Horizon_Seconds                        Feature_Family  Feature_Count  LSTM_Better_Count  Persistence_Better_Count  Equal_Count  Zero_Persistence_MAE_Count  LSTM_Mean_MAE  Persistence_Mean_MAE  MAE_Improvement_Percent  LSTM_Mean_RMSE  Persistence_Mean_RMSE  RMSE_Improvement_Percent  LSTM_Mean_Huber  Persistence_Mean_Huber
+               5                Packet and flow counts             22                 21                         1            0                           0       0.317638              0.414639                23.394148        0.549339               0.692939                 20.723336         0.123318                0.190965
+               5            Packet lengths and headers             63                 52                        11            0                           0       0.293417              0.322431                 8.998340        0.394405               0.487971                 19.174581         0.102491                0.143281
+               5 Protocol and network-state indicators             16                 13                         3            0                           0       0.285167              0.319335                10.699611        0.419287               0.530638                 20.984389         0.100423                0.149898
+               5                  Rates and throughput             12                 12                         0            0                           0       0.456825              0.550142                16.962294        0.611706               0.795193                 23.074531         0.172828                0.267870
+               5                             TCP flags             27                 13                        14            0                           3       0.406003              0.411745                 1.394561        0.581742               0.704587                 17.435123         0.192786                0.249879
+               5                                Timing             69                 69                         0            0                           0       0.391987              0.467943                16.231866        0.568975               0.727689                 21.810620         0.174008                0.259064
+
+===========================================================================
+HORIZON: 10 seconds
+===========================================================================
+ Horizon_Seconds                        Feature_Family  Feature_Count  LSTM_Better_Count  Persistence_Better_Count  Equal_Count  Zero_Persistence_MAE_Count  LSTM_Mean_MAE  Persistence_Mean_MAE  MAE_Improvement_Percent  LSTM_Mean_RMSE  Persistence_Mean_RMSE  RMSE_Improvement_Percent  LSTM_Mean_Huber  Persistence_Mean_Huber
+              10                Packet and flow counts             22                 21                         1            0                           0       0.331405              0.439096                24.525704        0.563221               0.718024                 21.559545         0.130019                0.207088
+              10            Packet lengths and headers             63                 53                        10            0                           0       0.306549              0.339242                 9.636921        0.408591               0.505901                 19.235143         0.110546                0.153197
+              10 Protocol and network-state indicators             16                 13                         3            0                           0       0.298896              0.331087                 9.722727        0.432360               0.544464                 20.589791         0.108045                0.157019
+              10                  Rates and throughput             12                 12                         0            0                           0       0.480770              0.571236                15.836894        0.641111               0.818447                 21.667452         0.189539                0.282212
+              10                             TCP flags             27                 15                        12            0                           3       0.417228              0.436215                 4.352681        0.606498               0.729626                 16.875457         0.207449                0.268097
+              10                                Timing             69                 69                         0            0                           0       0.407404              0.490714                16.977322        0.588710               0.747794                 21.273739         0.185687                0.273338
+
+===========================================================================
+HORIZON: 30 seconds
+===========================================================================
+ Horizon_Seconds                        Feature_Family  Feature_Count  LSTM_Better_Count  Persistence_Better_Count  Equal_Count  Zero_Persistence_MAE_Count  LSTM_Mean_MAE  Persistence_Mean_MAE  MAE_Improvement_Percent  LSTM_Mean_RMSE  Persistence_Mean_RMSE  RMSE_Improvement_Percent  LSTM_Mean_Huber  Persistence_Mean_Huber
+              30                Packet and flow counts             22                 21                         1            0                           0       0.345629              0.470683                26.568629        0.579119               0.753570                 23.150017         0.137448                0.227371
+              30            Packet lengths and headers             63                 53                        10            0                           0       0.321192              0.367094                12.504248        0.428903               0.533923                 19.669410         0.123016                0.169945
+              30 Protocol and network-state indicators             16                  9                         7            0                           0       0.327135              0.343011                 4.628558        0.456049               0.545773                 16.439766         0.122610                0.163109
+              30                  Rates and throughput             12                  9                         3            0                           0       0.561250              0.608639                 7.786074        0.721453               0.855131                 15.632540         0.241540                0.306281
+              30                             TCP flags             27                 16                        11            0                           3       0.417244              0.469699                11.167924        0.636047               0.763320                 16.673628         0.222230                0.293103
+              30                                Timing             69                 65                         4            0                           0       0.424327              0.519280                18.285478        0.612832               0.771886                 20.605991         0.199511                0.291532
+

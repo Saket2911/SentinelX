@@ -1,0 +1,36 @@
+SENTINELX - INDIVIDUAL FEATURE ABLATION COMPARISON
+=================================================================
+
+Features compared: 70
+Positive in both partitions: 41
+
+TOP 15 FEATURES BY AVERAGE RANK
+-----------------------------------------------------------------
+    Masked_Group  Validation_MAE_Change_Percent  Test_MAE_Change_Percent  Average_MAE_Change_Percent  Validation_Rank  Test_Rank  Average_Rank
+    RST Flag Cnt                       1.463033                 1.337359                    1.400196                1          1           1.0
+    ECE Flag Cnt                       1.029326                 0.970188                    0.999757                2          2           2.0
+Bwd Pkt Len Mean                       0.514008                 0.445825                    0.479917                3          5           4.0
+Bwd Seg Size Avg                       0.488785                 0.458946                    0.473866                4          4           4.0
+        Idle Max                       0.443643                 0.529246                    0.486445                6          3           4.5
+        Protocol                       0.454409                 0.289063                    0.371736                5          9           7.0
+Fwd Seg Size Min                       0.398159                 0.223235                    0.310697                7         12           9.5
+ Bwd Pkt Len Min                       0.261765                 0.293873                    0.277819               14          8          11.0
+     Flow Pkts/s                       0.328379                 0.215685                    0.272032                8         14          11.0
+     Fwd IAT Max                       0.297254                 0.196433                    0.246844               10         15          12.5
+       Idle Mean                       0.128208                 0.388395                    0.258301               22          6          14.0
+    URG Flag Cnt                       0.308322                 0.163016                    0.235669                9         19          14.0
+    ACK Flag Cnt                       0.185168                 0.253354                    0.219261               21         10          15.5
+      Fwd Pkts/s                       0.267431                 0.141964                    0.204697               12         20          16.0
+    Flow IAT Max                       0.248420                 0.164257                    0.206338               15         18          16.5
+
+INTERPRETATION
+-----------------------------------------------------------------
+Positive MAE change means masking the feature worsened forecasting.
+Negative MAE change means masking the feature improved forecasting.
+Consistent positive effects indicate sensitivity in both partitions.
+
+This is a masking sensitivity analysis, not causal feature importance.
+Validation and test results are exploratory and do not establish
+independent generalization or attack-detection capability.
+
+CSV: F:\Projects\SentinelX\Models\lstm_world_model_v1\individual_feature_comparison_v1\individual_feature_comparison.csv

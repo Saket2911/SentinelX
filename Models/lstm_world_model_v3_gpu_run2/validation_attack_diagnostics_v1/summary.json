@@ -1,0 +1,17 @@
+{
+  "step": "31D",
+  "dataset_split": "validation_only",
+  "benign_count": 35701,
+  "infilteration_count": 12644,
+  "feature_count": 209,
+  "method": [
+    "Mean and median absolute residual comparison",
+    "95th percentile comparison",
+    "Two-sample KS statistic",
+    "Standardized mean difference"
+  ],
+  "p_values_calculated": false,
+  "threshold_tuning": false,
+  "test_split_used": false,
+  "interpretation": "Exploratory feature-level residual separation within validation. Temporal correlation limits independent-sample inference. Feature differences are not proof of attack indicators."
+}

@@ -1,0 +1,72 @@
+
+
+import numpy as np
+
+
+def calculate_metrics(predictions, targets, huber_delta=1.0):
+    """
+    Calculate Huber loss, MAE and RMSE.
+
+    Metrics are averaged across all samples and features.
+    """
+
+    predictions = np.asarray(predictions, dtype=np.float64)
+    targets = np.asarray(targets, dtype=np.float64)
+
+    if predictions.shape != targets.shape:
+        raise ValueError(
+            f"Shape mismatch: predictions {predictions.shape}, "
+            f"targets {targets.shape}"
+        )
+
+    if predictions.size == 0:
+        raise ValueError("Cannot evaluate empty arrays.")
+
+    if not np.isfinite(predictions).all():
+        raise ValueError("Predictions contain non-finite values.")
+
+    if not np.isfinite(targets).all():
+t        raise ValueError("Targets contain non-finite values.")
+
+    if huber_delta <= 0:
+        raise ValueError("huber_delta must be positive.")
+
+    error = predictions - targets
+    absolute_error = np.abs(error)
+
+    huber = np.where(
+        absolute_error <= huber_delta,
+        0.5 * error ** 2,
+        huber_delta * (
+            absolute_error - 0.5 * huber_delta
+        )
+    )
+
+    return {
+        "huber_loss": float(np.mean(huber)),
+        "mae": float(np.mean(absolute_error)),
+        "rmse": float(np.sqrt(np.mean(error ** 2))),
+    }
+
+
+def calculate_improvements(model_metrics, baseline_metrics):
+    """
+    Positive percentage means the model has lower error
+    than the baseline.
+    """
+
+    improvements = {}
+
+    for metric, model_value in model_metrics.items():
+        baseline_value = baseline_metrics[metric]
+
+        improvements[metric] = (
+            float(
+                (baseline_value - model_value)
+                / baseline_value * 100
+            )
+            if baseline_value != 0
+            else None
+        )
+
+    return improvements

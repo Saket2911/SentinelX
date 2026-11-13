@@ -1,0 +1,23 @@
+{
+    "engine": "SentinelX Historical Replay V1",
+    "source": "CIC-IDS-2018 held-out test sequences",
+    "checkpoint": "Models/lstm_world_model_v3_gpu_run2/best_model.pt",
+    "checkpoint_epoch": 11,
+    "sequence_length": 10,
+    "prediction_horizon": "one next state",
+    "input_features": 209,
+    "number_of_steps": 31406,
+    "prediction_method": "rolling one-step-ahead",
+    "predictions_fed_back_as_inputs": false,
+    "prediction_comparison_space": "preprocessed model feature space",
+    "mean_test_mae": 0.3206269443035126,
+    "selected_features": [
+        "Flow Count",
+        "Flow IAT Mean__mean",
+        "Flow IAT Min__mean",
+        "TotLen Fwd Pkts__mean",
+        "ACK Flag Cnt__mean"
+    ],
+    "csv": "Models/lstm_world_model_v3_gpu_run2/historical_replay_v1/test_replay.csv",
+    "arrays": "Models/lstm_world_model_v3_gpu_run2/historical_replay_v1/replay_arrays.npz"
+}

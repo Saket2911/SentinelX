@@ -1,0 +1,27 @@
+{
+    "model": "SentinelXLSTM V3",
+    "checkpoint": "F:\\Projects\\SentinelX\\Models\\lstm_world_model_v3_gpu_run2\\best_model.pt",
+    "best_epoch": 11,
+    "device": "cuda",
+    "test_samples": 31406,
+    "input_features": 209,
+    "sequence_length": 10,
+    "lstm_metrics": {
+        "huber_loss": 0.12068178504705429,
+        "mae": 0.3206269443035126,
+        "rmse": 0.531328022480011
+    },
+    "persistence_baseline_metrics": {
+        "huber_loss": 0.17707066237926483,
+        "mae": 0.35622745752334595,
+        "rmse": 0.6790331602096558
+    },
+    "improvement_over_baseline_percent": {
+        "huber_loss": 31.845409383194205,
+        "mae": 9.993758894203216,
+        "rmse": 21.752271668741464
+    },
+    "test_data_used_for_training": false,
+    "test_data_used_for_model_selection": false,
+    "evaluation_seconds": 9.670116186141968
+}

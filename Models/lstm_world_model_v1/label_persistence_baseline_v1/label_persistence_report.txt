@@ -1,0 +1,31 @@
+SENTINELX LABEL PERSISTENCE BASELINE
+=================================================================
+
+Purpose:
+Measure how well the previous second's Benign/Bot label persists into a future target state.
+
+This is a label-persistence reference, not the LSTM's
+numerical forecasting score and not an attack detector.
+
+Test states: 14722
+Timestamp range: 2018-03-02 08:54:38 to 2018-03-02 12:59:59
+
+Evaluation alignment:
+Origin label = labels[i-1]
+Future label = labels[i+horizon-1]
+Only same-segment samples exactly horizon seconds apart are used.
+
+Metrics:
+ Horizon_Seconds  Samples  Skipped_Boundary_or_Time  Accuracy  Balanced_Accuracy  Bot_Precision  Bot_Recall   Bot_F1  Benign_Recall  Bot_Recall_Check  TN_Benign_Predicted_Benign  FP_Benign_Predicted_Bot  FN_Bot_Predicted_Benign  TP_Bot_Predicted_Bot
+               1    14721                         0  0.973575           0.970434       0.980137    0.980037 0.980087       0.960832          0.980037                        4759                      194                      195                  9573
+               2    14720                         0  0.998370           0.998224       0.998874    0.998669 0.998771       0.997779          0.998669                        4941                       11                       13                  9755
+               5    14717                         0  0.973568           0.970518       0.980334    0.979832 0.980083       0.961204          0.979832                        4757                      192                      197                  9571
+              10    14712                         0  0.991979           0.991263       0.994466    0.993448 0.993957       0.989078          0.993448                        4890                       54                       64                  9704
+              30    14692                         0  0.979172           0.977387       0.985829    0.982801 0.984313       0.971974          0.982801                        4786                      138                      168                  9600
+
+Interpretation notes:
+- Accuracy can be misleading because Bot is the majority label.
+- Balanced accuracy gives equal weight to Benign and Bot recall.
+- Bot precision/recall/F1 evaluate persistence of the Bot label only.
+- This experiment does not evaluate the LSTM's predicted numeric states.
+- It does not establish early warning or real-world attack detection.

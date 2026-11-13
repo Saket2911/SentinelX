@@ -1,0 +1,53 @@
+
+SENTINELX - LSTM WORLD MODEL V3
+================================
+
+ARCHITECTURE
+------------
+Input features: 209
+Sequence length: 10
+Hidden size: 128
+LSTM layers: 1
+Output features: 209
+
+GPU CONFIGURATION
+-----------------
+PyTorch: 2.5.1+cu118
+CUDA: 11.8
+Device: cuda:0
+GPU: GeForce GTX 1050
+GPU memory: 3.00 GB
+
+GPU OPTIMIZATION
+----------------
+Batch size: 128
+Chunk size: 8192
+Chunk-based GPU data loading: Enabled
+GPU-side batch indexing: Enabled
+
+TRAINING
+--------
+Training samples: 197389
+Validation samples: 50870
+Optimizer: AdamW
+Learning rate: 0.001
+Loss: HuberLoss
+Maximum epochs: 30
+Patience: 6
+
+RESULTS
+-------
+Best epoch: 11
+Best validation Huber: 0.43093526
+Training time: 420.36 seconds
+
+TEST DATA
+---------
+Test data was not loaded or evaluated during training.
+
+OBJECTIVE
+---------
+Predict the next numerical network state using the
+previous 10 network states.
+
+Regression metrics do not represent attack detection accuracy.

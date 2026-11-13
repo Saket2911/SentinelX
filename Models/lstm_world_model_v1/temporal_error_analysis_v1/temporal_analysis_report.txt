@@ -1,0 +1,41 @@
+SENTINELX - TEMPORAL ERROR ANALYSIS
+
+Total states: 14722
+Start: 2018-03-02 08:54:38
+End: 2018-03-02 12:59:59
+Duplicate timestamps: 0
+Non-one-second intervals: 0
+
+OVERALL ERROR BY LABEL
+              count      mean    median       std       min       max
+actual_label                                                         
+Benign         4954  0.525419  0.497020  0.176024  0.173958  2.243162
+Bot            9768  0.464721  0.435984  0.168109  0.157064  1.586049
+
+FIVE-MINUTE ANALYSIS
+Intervals: 50
+Intervals containing both labels: 6
+
+ERROR DIFFERENCE (BENIGN - BOT)
+count    6.000000
+mean     0.050209
+std      0.049857
+min     -0.014868
+25%      0.012752
+50%      0.055485
+75%      0.083458
+max      0.113860
+
+CONSECUTIVE LABEL RUNS
+Total runs: 390
+Label transitions: 389
+label
+Benign    1.0
+Bot       1.0
+
+Spearman correlation: -0.18228905622975572
+
+NOTE: These are descriptive test-set analyses.
+Do not use these results to tune thresholds or select models.
+Temporal clustering and adjacent sequence overlap mean that
+individual rows should not be treated as independent samples.

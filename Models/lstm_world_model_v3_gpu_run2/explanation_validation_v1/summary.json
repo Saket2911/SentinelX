@@ -1,0 +1,36 @@
+{
+  "step": "31C",
+  "purpose": "Compare feature-level prediction residuals across splits",
+  "model_checkpoint_epoch": 11,
+  "feature_count": 209,
+  "validation_test_benign_comparison": true,
+  "labels_used_for_diagnostic_grouping_only": true,
+  "labels_used_for_triage_decisions": false,
+  "threshold_tuning_performed": false,
+  "split_summary": {
+    "Validation": {
+      "observations": 50870,
+      "mean_mae_model_space": 0.7643765211105347,
+      "labels_for_diagnostic_grouping": {
+        "Benign": 35701,
+        "Infilteration": 12644,
+        "NO_FLOWS": 2525
+      }
+    },
+    "Test": {
+      "observations": 31406,
+      "mean_mae_model_space": 0.3206269443035126,
+      "labels_for_diagnostic_grouping": {
+        "Bot": 20216,
+        "Benign": 11189,
+        "NO_FLOWS": 1
+      }
+    }
+  },
+  "outputs": [
+    "validation_feature_residuals.npz",
+    "feature_residual_group_summary.csv",
+    "benign_feature_residual_comparison.csv"
+  ],
+  "interpretation": "Residual differences describe model prediction behavior across dataset splits. They do not establish attack indicators or justify a new detection threshold."
+}

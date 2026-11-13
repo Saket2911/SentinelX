@@ -1,0 +1,14 @@
+{
+    "checkpoint_sha256": "19e117e3cc407fe656aa3e6840003031371419a2a367c31128a8b720a900450c",
+    "input_rows": 100,
+    "segments": 1,
+    "warmup_observations": 9,
+    "streaming_predictions": 91,
+    "feature_count": 209,
+    "comparison_method": "Streaming versus direct inference on identical 10-state windows",
+    "absolute_tolerance": 1e-06,
+    "maximum_absolute_difference": 0.0,
+    "all_predictions_finite": true,
+    "all_comparisons_within_tolerance": true,
+    "all_predicted_timestamps_correct": true
+}

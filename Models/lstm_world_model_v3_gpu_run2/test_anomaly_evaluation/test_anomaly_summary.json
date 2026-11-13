@@ -1,0 +1,31 @@
+{
+    "experiment": "V3 held-out test residual anomaly evaluation",
+    "checkpoint_epoch": 11,
+    "checkpoint": "/mnt/f/Projects/SentinelX/Models/lstm_world_model_v3_gpu_run2/best_model.pt",
+    "device": "cpu",
+    "test_samples": 31406,
+    "threshold": 1.88139677,
+    "threshold_source": "Frozen 99th percentile of benign validation scores",
+    "threshold_recalibrated_on_test": false,
+    "score_definition": "Mean absolute residual across 209 features",
+    "detection_metrics_benign_vs_bot": {
+        "TP": 0,
+        "TN": 11189,
+        "FP": 0,
+        "FN": 20216,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 1.0,
+        "false_positive_rate": 0.0,
+        "f1_score": 0.0,
+        "accuracy": 0.3562808469988855
+    },
+    "label_distribution": {
+        "Bot": 20216,
+        "Benign": 11189,
+        "NO_FLOWS": 1
+    },
+    "no_flows_in_binary_metrics": false,
+    "test_used_for_model_training": false,
+    "evaluation_seconds": 5.817020893096924
+}

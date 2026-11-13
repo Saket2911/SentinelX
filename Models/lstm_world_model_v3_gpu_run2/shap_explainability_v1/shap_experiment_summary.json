@@ -1,0 +1,29 @@
+{
+    "experiment": "SentinelX LSTM SHAP V1",
+    "method": "SHAP GradientExplainer",
+    "checkpoint": "/mnt/f/Projects/SentinelX/Models/lstm_world_model_v3_gpu_run2/best_model.pt",
+    "checkpoint_epoch": 11,
+    "sequence_length": 10,
+    "input_features": 209,
+    "background_size": 32,
+    "explanation_samples": 8,
+    "nsamples": 50,
+    "output_features": [
+        "Flow Count",
+        "Flow IAT Mean__mean",
+        "Flow IAT Min__mean",
+        "TotLen Fwd Pkts__mean",
+        "ACK Flag Cnt__mean"
+    ],
+    "background_source": "Random training sequences",
+    "explanation_source": "Held-out test sequences",
+    "device": "cpu",
+    "shap_version": "0.54.1",
+    "interpretation": "Feature contributions to selected next-state predictions. SHAP values are not attack probabilities or causal evidence.",
+    "shap_shape": [
+        8,
+        10,
+        209,
+        5
+    ]
+}

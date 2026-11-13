@@ -1,0 +1,69 @@
+SENTINELX - PER-LABEL MULTI-STEP FORECASTING
+============================================================
+
+Test sequences: 14722
+Common forecast origins: 14693
+Sequence length: 10
+Input/output features: 206
+Horizons: [1, 2, 5, 10, 30]
+Device: cuda
+Model: Existing LSTM World Model v1; no retraining
+Grouping: Actual future target label at i + horizon - 1
+Baseline: Repeat the last observed state
+
+Horizon 1 sec | Label: Benign | States: 4954
+  LSTM MAE: 0.525419 | Persistence MAE: 0.622500 | Improvement: 15.60%
+  LSTM RMSE: 0.782986 | Persistence RMSE: 1.019447 | Improvement: 23.20%
+  LSTM Huber: 0.245584 | Persistence Huber: 0.364856
+
+Horizon 1 sec | Label: Bot | States: 9739
+  LSTM MAE: 0.464942 | Persistence MAE: 0.541052 | Improvement: 14.07%
+  LSTM RMSE: 0.707749 | Persistence RMSE: 0.909590 | Improvement: 22.19%
+  LSTM Huber: 0.204603 | Persistence Huber: 0.302073
+
+Horizon 2 sec | Label: Benign | States: 4953
+  LSTM MAE: 0.537336 | Persistence MAE: 0.655895 | Improvement: 18.08%
+  LSTM RMSE: 0.801891 | Persistence RMSE: 1.056717 | Improvement: 24.11%
+  LSTM Huber: 0.255900 | Persistence Huber: 0.390075
+
+Horizon 2 sec | Label: Bot | States: 9740
+  LSTM MAE: 0.478073 | Persistence MAE: 0.566557 | Improvement: 15.62%
+  LSTM RMSE: 0.730190 | Persistence RMSE: 0.939731 | Improvement: 22.30%
+  LSTM Huber: 0.216309 | Persistence Huber: 0.321386
+
+Horizon 5 sec | Label: Benign | States: 4950
+  LSTM MAE: 0.566028 | Persistence MAE: 0.685274 | Improvement: 17.40%
+  LSTM RMSE: 0.841688 | Persistence RMSE: 1.083226 | Improvement: 22.30%
+  LSTM Huber: 0.279026 | Persistence Huber: 0.411067
+
+Horizon 5 sec | Label: Bot | States: 9743
+  LSTM MAE: 0.509168 | Persistence MAE: 0.605987 | Improvement: 15.98%
+  LSTM RMSE: 0.779409 | Persistence RMSE: 0.976005 | Improvement: 20.14%
+  LSTM Huber: 0.242719 | Persistence Huber: 0.348197
+
+Horizon 10 sec | Label: Benign | States: 4945
+  LSTM MAE: 0.590624 | Persistence MAE: 0.717069 | Improvement: 17.63%
+  LSTM RMSE: 0.877408 | Persistence RMSE: 1.115896 | Improvement: 21.37%
+  LSTM Huber: 0.300247 | Persistence Huber: 0.435127
+
+Horizon 10 sec | Label: Bot | States: 9748
+  LSTM MAE: 0.534260 | Persistence MAE: 0.632086 | Improvement: 15.48%
+  LSTM RMSE: 0.818431 | Persistence RMSE: 1.005174 | Improvement: 18.58%
+  LSTM Huber: 0.264640 | Persistence Huber: 0.368145
+
+Horizon 30 sec | Label: Benign | States: 4925
+  LSTM MAE: 0.668085 | Persistence MAE: 0.762473 | Improvement: 12.38%
+  LSTM RMSE: 0.977418 | Persistence RMSE: 1.161197 | Improvement: 15.83%
+  LSTM Huber: 0.364733 | Persistence Huber: 0.469180
+
+Horizon 30 sec | Label: Bot | States: 9768
+  LSTM MAE: 0.568817 | Persistence MAE: 0.682385 | Improvement: 16.64%
+  LSTM RMSE: 0.866914 | Persistence RMSE: 1.055085 | Improvement: 17.83%
+  LSTM Huber: 0.293650 | Persistence Huber: 0.404497
+
+INTERPRETATION LIMITATIONS
+- These are future-state forecasting metrics, not attack-detection metrics.
+- Labels are used only to group actual future targets, not as model inputs.
+- The test partition contains only the labels observed in this partition.
+- Results describe this dataset partition, not all real networks.
+- Test data have been used in earlier exploratory analyses.

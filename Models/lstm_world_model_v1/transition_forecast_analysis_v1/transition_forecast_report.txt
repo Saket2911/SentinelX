@@ -1,0 +1,56 @@
+SENTINELX - TRANSITION FORECAST ANALYSIS
+======================================================================
+
+Checkpoint epoch: 2
+Device: cuda
+Transition radius: 5 states
+Label/segment transitions: 389
+Near-transition states: 491
+
+RESULTS
+----------------------------------------------------------------------
+ Horizon_Seconds Target_Label  Transition_Category  Sequences  LSTM_MAE  LSTM_RMSE  Persistence_MAE  Persistence_RMSE  MAE_Improvement_Percent  RMSE_Improvement_Percent
+               1       Benign Away_From_Transition       4745  0.524642   0.781493         0.623088          1.019448                15.799716                 23.341579
+               1       Benign      Near_Transition        209  0.543079   0.816146         0.609157          1.019418                10.847443                 19.940031
+               1          Bot Away_From_Transition       9457  0.464970   0.708071         0.539648          0.907557                13.838264                 21.980515
+               1          Bot      Near_Transition        282  0.464012   0.696851         0.588159          0.975315                21.107744                 28.551256
+               2       Benign Away_From_Transition       4744  0.536731   0.800614         0.653343          1.052581                17.848583                 23.937986
+               2       Benign      Near_Transition        209  0.551072   0.830347         0.713806          1.146604                22.798120                 27.582115
+               2          Bot Away_From_Transition       9458  0.478242   0.730521         0.565869          0.938497                15.485366                 22.160572
+               2          Bot      Near_Transition        282  0.472403   0.718991         0.589643          0.980210                19.883194                 26.649273
+               5       Benign Away_From_Transition       4741  0.566160   0.841119         0.687078          1.084507                17.598852                 22.442299
+               5       Benign      Near_Transition        209  0.563023   0.854510         0.644345          1.053756                12.620992                 18.908213
+               5          Bot Away_From_Transition       9461  0.509750   0.780291         0.605073          0.974661                15.753973                 19.942362
+               5          Bot      Near_Transition        282  0.489651   0.749214         0.636666          1.020072                23.091467                 26.552872
+              10       Benign Away_From_Transition       4736  0.591237   0.877309         0.716801          1.114357                17.517281                 21.272243
+              10       Benign      Near_Transition        209  0.576728   0.879653         0.723150          1.150198                20.247839                 23.521555
+              10          Bot Away_From_Transition       9466  0.535202   0.819700         0.631462          1.003784                15.243870                 18.338972
+              10          Bot      Near_Transition        282  0.502618   0.774612         0.653039          1.050764                23.033979                 26.281002
+              30       Benign Away_From_Transition       4716  0.669954   0.978804         0.760844          1.158111                11.946009                 15.482746
+              30       Benign      Near_Transition        209  0.625925   0.945611         0.799230          1.228767                21.684061                 23.043875
+              30          Bot Away_From_Transition       9486  0.569545   0.867897         0.680827          1.052956                16.345116                 17.575191
+              30          Bot      Near_Transition        282  0.544308   0.833190         0.734787          1.124346                25.923079                 25.895554
+
+METHODOLOGY
+----------------------------------------------------------------------
+A transition occurs when consecutive target labels change
+or when a temporal segment changes.
+
+Near-transition states are within five seconds before
+or after a detected transition.
+
+Predictions are grouped using the actual target label
+and the target state's transition proximity.
+
+The persistence baseline repeats the last observed state.
+
+LIMITATIONS
+----------------------------------------------------------------------
+Label transitions are dataset annotations, not necessarily
+the exact onset of malicious activity.
+
+The test partition contains only the labels observed here.
+Forecasting error is not an attack probability.
+This experiment does not establish early-warning capability.
+
+CSV: F:\Projects\SentinelX\Models\lstm_world_model_v1\transition_forecast_analysis_v1\transition_forecast_metrics.csv

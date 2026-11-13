@@ -1,0 +1,31 @@
+{
+  "audit": "SentinelX Historical Replay Integrity Audit",
+  "steps": 31406,
+  "features": 209,
+  "overall_mean_mae_model_space": 0.3206269376663703,
+  "maximum_actual_target_difference": 0.0,
+  "maximum_step_mae_difference": 1.7230700044557068e-07,
+  "checks_passed": 19,
+  "checks_failed": 0,
+  "results": {
+    "prediction_shape": true,
+    "actual_shape": true,
+    "test_y_shape": true,
+    "csv_count": true,
+    "manifest_count": true,
+    "feature_count": true,
+    "feature_order": true,
+    "predictions_finite": true,
+    "actual_finite": true,
+    "actual_matches_test_y": true,
+    "metadata_alignment": true,
+    "step_order": true,
+    "timestamps_valid": true,
+    "chronological": true,
+    "step_mae": true,
+    "overall_mae": true,
+    "selected_feature_csv": true,
+    "one_step_ahead": true,
+    "no_prediction_feedback": true
+  }
+}

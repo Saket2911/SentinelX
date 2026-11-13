@@ -1,0 +1,23 @@
+SENTINELX V2 — FINAL TEST EVALUATION
+============================================================
+Test samples: 31406
+Evaluation device: cuda
+Best checkpoint epoch: 8
+
+LSTM V2:
+HUBER: 0.1188262390
+MAE: 0.3153945693
+RMSE: 0.5269987547
+
+PERSISTENCE BASELINE:
+HUBER: 0.1745649518
+MAE: 0.3511864949
+RMSE: 0.6742116071
+
+IMPROVEMENT OVER PERSISTENCE:
+HUBER: 31.93%
+MAE: 10.19%
+RMSE: 21.83%
+
+Test partition evaluated only after model training.
+No model retraining or checkpoint modification performed.

@@ -1,0 +1,22 @@
+{
+    "model": "SentinelXLSTM V2",
+    "sequence_length": 10,
+    "input_features": 212,
+    "hidden_size": 128,
+    "num_layers": 1,
+    "dropout": 0.2,
+    "batch_size": 32,
+    "learning_rate": 0.001,
+    "optimizer": "AdamW",
+    "loss": "HuberLoss",
+    "max_epochs": 30,
+    "patience": 6,
+    "seed": 42,
+    "device": "cuda",
+    "training_samples": 197389,
+    "validation_samples": 50870,
+    "test_data_used": false,
+    "best_epoch": 8,
+    "best_validation_huber": 0.4256109263600735,
+    "training_seconds": 1009.2346308231354
+}

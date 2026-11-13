@@ -1,0 +1,39 @@
+SENTINELX V3 — DATASET LABEL COVERAGE AND MITRE MAPPING
+=================================================================
+
+Label counts by chronological partition
+
+TRAIN
+------------------------------
+Benign: 163960
+Brute Force -Web: 408
+Brute Force -XSS: 175
+DDOS attack-HOIC: 1332
+DDOS attack-LOIC-UDP: 933
+DDoS attacks-LOIC-HTTP: 4229
+DoS attacks-GoldenEye: 647
+DoS attacks-Hulk: 188
+DoS attacks-SlowHTTPTest: 2750
+DoS attacks-Slowloris: 2449
+FTP-BruteForce: 5826
+Infilteration: 2994
+MIXED_ATTACK: 2
+NO_FLOWS: 5978
+SQL Injection: 76
+SSH-Bruteforce: 5442
+
+VALIDATION
+------------------------------
+Benign: 35701
+Infilteration: 12644
+NO_FLOWS: 2525
+
+TEST
+------------------------------
+Benign: 11189
+Bot: 20216
+NO_FLOWS: 1
+
+Important evaluation limitation
+------------------------------
+The chronological partitions have different label coverage. Training contains multiple attack families, validation contains Benign, Infilteration and NO_FLOWS, while test contains Bot, Benign and NO_FLOWS. Bot is absent from training. Therefore, the test partition does not evaluate every training attack family. This mapping is contextual analyst guidance, not model output or confirmed ground-truth ATT&CK annotation.

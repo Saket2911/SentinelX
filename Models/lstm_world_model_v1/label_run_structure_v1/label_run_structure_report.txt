@@ -1,0 +1,55 @@
+SENTINELX LABEL RUN STRUCTURE ANALYSIS
+=================================================================
+
+Total states: 14722
+Total runs: 390
+Timestamp range: 2018-03-02 08:54:38 to 2018-03-02 12:59:59
+
+RUN DURATION SUMMARY
+-----------------------------------------------------------------
+ Label  Run_Count      Mean  Median  Minimum  Maximum
+Benign        195 25.405128     1.0        1     4730
+   Bot        195 50.092308     1.0        1     6098
+
+RUN LENGTH HISTOGRAM
+-----------------------------------------------------------------
+ Label Duration_Category  Run_Count  States_In_Runs
+Benign          1 second        193             193
+Benign         2 seconds          0               0
+Benign       3-5 seconds          0               0
+Benign      6-10 seconds          0               0
+Benign     11-30 seconds          0               0
+Benign     31-60 seconds          1              31
+Benign    61-300 seconds          0               0
+Benign  Over 300 seconds          1            4730
+   Bot          1 second        184             184
+   Bot         2 seconds          2               4
+   Bot       3-5 seconds          0               0
+   Bot      6-10 seconds          0               0
+   Bot     11-30 seconds          0               0
+   Bot     31-60 seconds          0               0
+   Bot    61-300 seconds          7             701
+   Bot  Over 300 seconds          2            8879
+
+PERCENTAGE OF STATES IN RUNS AT LEAST EACH DURATION
+-----------------------------------------------------------------
+ Label  Minimum_Run_Seconds  Number_Of_Runs  States_In_Qualifying_Runs  Total_States_For_Label  Percentage_Of_Label_States
+Benign                    1             195                       4954                    4954                  100.000000
+Benign                    2               2                       4761                    4954                   96.104158
+Benign                    5               2                       4761                    4954                   96.104158
+Benign                   10               2                       4761                    4954                   96.104158
+Benign                   30               2                       4761                    4954                   96.104158
+Benign                   60               1                       4730                    4954                   95.478401
+Benign                  300               1                       4730                    4954                   95.478401
+   Bot                    1             195                       9768                    9768                  100.000000
+   Bot                    2              11                       9584                    9768                   98.116298
+   Bot                    5               9                       9580                    9768                   98.075348
+   Bot                   10               9                       9580                    9768                   98.075348
+   Bot                   30               9                       9580                    9768                   98.075348
+   Bot                   60               9                       9580                    9768                   98.075348
+   Bot                  300               2                       8879                    9768                   90.898853
+
+Interpretation:
+A run is a consecutive sequence of states with the same label inside the same segment.
+A long run describes label persistence in this dataset; it does not necessarily represent a continuous real-world attack episode.
+The results describe the test partition only.

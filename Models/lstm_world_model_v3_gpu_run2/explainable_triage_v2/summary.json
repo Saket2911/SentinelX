@@ -1,0 +1,22 @@
+{
+  "engine": "SentinelX Explainable Threat Triage V2",
+  "observations": 31406,
+  "features": 209,
+  "segments": 2,
+  "mean_prediction_mae_model_space": 0.3206269443035126,
+  "median_prediction_mae_model_space": 0.2970901131629944,
+  "maximum_prediction_mae_model_space": 1.9578372240066528,
+  "top_features_per_observation": 5,
+  "temporal_history_window": 5,
+  "temporal_comparison": "Current score compared with the preceding five observations within the same segment. No cross-segment history is used.",
+  "ground_truth_labels_used_for_explanations": false,
+  "threshold_based_attack_decision": false,
+  "interpretation": "Feature residuals explain differences between predicted and actual network states. They do not establish malicious activity. Temporal comparisons provide context, not a validated detector.",
+  "comparison_space": "Preprocessed model feature space",
+  "outputs": {
+    "explanations": "Models/lstm_world_model_v3_gpu_run2/explainable_triage_v2/explainable_triage.csv",
+    "feature_residuals": "Models/lstm_world_model_v3_gpu_run2/explainable_triage_v2/feature_residuals.npz",
+    "frequent_contributors": "Models/lstm_world_model_v3_gpu_run2/explainable_triage_v2/most_frequent_error_contributors.csv",
+    "global_feature_summary": "Models/lstm_world_model_v3_gpu_run2/explainable_triage_v2/global_feature_error_summary.csv"
+  }
+}

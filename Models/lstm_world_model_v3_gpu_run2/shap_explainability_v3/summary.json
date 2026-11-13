@@ -1,0 +1,29 @@
+{
+    "experiment": "SentinelX SHAP Benign Reference V2",
+    "method": "SHAP GradientExplainer",
+    "checkpoint_epoch": 11,
+    "sequence_length": 10,
+    "input_features": 209,
+    "background_source": "Benign training sequences",
+    "background_size": 128,
+    "explanation_source": "Held-out test sequences",
+    "benign_explanation_samples": 32,
+    "bot_explanation_samples": 32,
+    "nsamples": 100,
+    "output_features": [
+        "Flow Count",
+        "Flow IAT Mean__mean",
+        "Flow IAT Min__mean",
+        "TotLen Fwd Pkts__mean",
+        "ACK Flag Cnt__mean"
+    ],
+    "device": "cpu",
+    "shap_version": "0.54.1",
+    "shap_shape": [
+        64,
+        10,
+        209,
+        5
+    ],
+    "interpretation": "Predictive feature attributions relative to benign training background. Not attack probabilities, causal evidence, or a standalone detector."
+}

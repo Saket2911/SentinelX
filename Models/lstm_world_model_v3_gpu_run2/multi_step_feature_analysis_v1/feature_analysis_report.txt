@@ -1,0 +1,124 @@
+SENTINELX V3 — FEATURE-WISE RECURSIVE FORECASTING
+===========================================================================
+Checkpoint epoch: 11
+Features: 209
+Sequence length: 10
+Common forecast origins: 31377
+Device: cpu
+Forecasting seconds: 24.50
+
+AGGREGATE VERIFICATION
+---------------------------------------------------------------------------
+All checks passed: True
+
+FEATURE-WISE RESULTS
+---------------------------------------------------------------------------
+
+HORIZON: 1 seconds
+Features improved over persistence: 165/209
+Features worse than persistence: 41/209
+Features equal to persistence: 0/209
+
+TOP 5 FEATURES BY MAE IMPROVEMENT:
+  Fwd IAT Min__mean: 31.677%
+  Flow IAT Min__mean: 31.655%
+  Fwd IAT Min__std: 31.350%
+  Flow IAT Mean__std: 30.895%
+  Fwd IAT Mean__std: 30.603%
+
+BOTTOM 5 FEATURES BY MAE IMPROVEMENT:
+  Has Flows: -3625.744%
+  PSH Flag Cnt__max: -3071.316%
+  ECE Flag Cnt__max: -186.817%
+  RST Flag Cnt__max: -186.733%
+  Init Bwd Win Byts__max: -101.626%
+
+HORIZON: 2 seconds
+Features improved over persistence: 176/209
+Features worse than persistence: 30/209
+Features equal to persistence: 0/209
+
+TOP 5 FEATURES BY MAE IMPROVEMENT:
+  Idle Mean__mean: 33.477%
+  Idle Min__mean: 33.476%
+  Idle Max__mean: 33.450%
+  Idle Min__std: 32.754%
+  Idle Mean__std: 32.671%
+
+BOTTOM 5 FEATURES BY MAE IMPROVEMENT:
+  Has Flows: -5009.623%
+  PSH Flag Cnt__max: -3701.309%
+  Init Bwd Win Byts__max: -110.976%
+  ECE Flag Cnt__max: -108.362%
+  RST Flag Cnt__max: -108.310%
+
+HORIZON: 5 seconds
+Features improved over persistence: 180/209
+Features worse than persistence: 26/209
+Features equal to persistence: 0/209
+
+TOP 5 FEATURES BY MAE IMPROVEMENT:
+  Fwd IAT Min__std: 31.090%
+  Idle Mean__std: 30.989%
+  Idle Min__std: 30.984%
+  Idle Max__std: 30.964%
+  Flow IAT Min__std: 30.755%
+
+BOTTOM 5 FEATURES BY MAE IMPROVEMENT:
+  Has Flows: -4848.081%
+  PSH Flag Cnt__max: -2835.698%
+  ECE Flag Cnt__max: -84.525%
+  RST Flag Cnt__max: -84.505%
+  Init Bwd Win Byts__max: -60.315%
+
+HORIZON: 10 seconds
+Features improved over persistence: 183/209
+Features worse than persistence: 23/209
+Features equal to persistence: 0/209
+
+TOP 5 FEATURES BY MAE IMPROVEMENT:
+  Idle Max__std: 34.094%
+  Idle Mean__std: 34.080%
+  Idle Min__std: 34.061%
+  Flow IAT Min__std: 33.546%
+  Fwd IAT Min__std: 33.037%
+
+BOTTOM 5 FEATURES BY MAE IMPROVEMENT:
+  Has Flows: -4422.675%
+  PSH Flag Cnt__max: -2344.823%
+  RST Flag Cnt__max: -101.376%
+  ECE Flag Cnt__max: -101.365%
+  Init Bwd Win Byts__max: -64.454%
+
+HORIZON: 30 seconds
+Features improved over persistence: 173/209
+Features worse than persistence: 33/209
+Features equal to persistence: 0/209
+
+TOP 5 FEATURES BY MAE IMPROVEMENT:
+  FIN Flag Cnt__std: 38.394%
+  FIN Flag Cnt__mean: 38.363%
+  Fwd Header Len__max: 35.425%
+  Tot Bwd Pkts__std: 35.097%
+  Subflow Bwd Pkts__std: 35.097%
+
+BOTTOM 5 FEATURES BY MAE IMPROVEMENT:
+  Has Flows: -5006.360%
+  PSH Flag Cnt__max: -2052.857%
+  RST Flag Cnt__max: -177.482%
+  ECE Flag Cnt__max: -177.404%
+  Init Bwd Win Byts__max: -141.993%
+
+===========================================================================
+INTERPRETATION NOTES
+---------------------------------------------------------------------------
+Positive improvement means LSTM MAE is lower than persistence MAE.
+Negative improvement means persistence MAE is lower than LSTM MAE.
+Feature-wise errors are measured in preprocessed model feature space.
+They are not raw network units.
+Recursive predictions are fed into subsequent forecast windows.
+This evaluates numerical future-state prediction, not attack detection.
+Test data was previously used for exploratory evaluation.
+These results are not an untouched independent test evaluation.
+
+Aggregate verification: PASS

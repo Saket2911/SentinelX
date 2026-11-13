@@ -1,0 +1,22 @@
+SENTINELX STEP 33 — FEATURE VALUE DISTRIBUTION AUDIT
+===========================================================================
+
+Note: Zero percentages refer to standardized model-space values, not necessarily original raw traffic zeros.
+
+     Split         Label             Feature  Samples  Finite Samples  Nonfinite Samples  Zero Percentage Model Space  Near Zero Percentage Model Space      Mean      Std   Minimum   Maximum  Unique Values  Constant  Nearly Constant
+Validation        Benign CWE Flag Count__max    35701           35701                  0                          0.0                               0.0 -0.000602 0.990442 -0.031629 31.616499              2     False            False
+Validation Infilteration CWE Flag Count__max    12644           12644                  0                          0.0                               0.0  1.239903 6.214886 -0.031629 31.616499              2     False            False
+Validation        Benign  Fwd URG Flags__max    35701           35701                  0                          0.0                               0.0 -0.000602 0.990442 -0.031629 31.616499              2     False            False
+Validation Infilteration  Fwd URG Flags__max    12644           12644                  0                          0.0                               0.0  1.239903 6.214886 -0.031629 31.616499              2     False            False
+Validation        Benign CWE Flag Count__std    35701           35701                  0                          0.0                               0.0  0.001873 1.056320 -0.030266 46.024998             35     False            False
+Validation Infilteration CWE Flag Count__std    12644           12644                  0                          0.0                               0.0  1.180854 6.189461 -0.030266 54.013729            253     False            False
+Validation        Benign  Fwd URG Flags__std    35701           35701                  0                          0.0                               0.0  0.001873 1.056320 -0.030266 46.024998             35     False            False
+Validation Infilteration  Fwd URG Flags__std    12644           12644                  0                          0.0                               0.0  1.180854 6.189461 -0.030266 54.013729            253     False            False
+      Test        Benign    Bwd Pkts/s__mean    11189           11189                  0                          0.0                               0.0 -0.301446 0.908295 -2.121737  1.946436          11182     False            False
+      Test           Bot    Bwd Pkts/s__mean    20216           20216                  0                          0.0                               0.0 -0.117085 0.487622 -1.981869  1.766854          20192     False            False
+      Test        Benign     Bwd Pkts/s__std    11189           11189                  0                          0.0                               0.0 -0.353125 1.007060 -2.363728  1.856053          11168     False            False
+      Test           Bot     Bwd Pkts/s__std    20216           20216                  0                          0.0                               0.0 -0.114883 0.548556 -2.177059  1.776954          20178     False            False
+      Test        Benign   Flow Byts/s__mean    11189           11189                  0                          0.0                               0.0 -0.024377 0.698919 -2.837616  1.889643          11177     False            False
+      Test           Bot   Flow Byts/s__mean    20216           20216                  0                          0.0                               0.0  0.167023 0.391339 -1.367567  2.054157          20161     False            False
+      Test        Benign    Flow Byts/s__std    11189           11189                  0                          0.0                               0.0 -0.108789 0.745726 -2.886552  1.820799          11169     False            False
+      Test           Bot    Flow Byts/s__std    20216           20216                  0                          0.0                               0.0  0.105822 0.427079 -1.362898  1.989254          20143     False            False

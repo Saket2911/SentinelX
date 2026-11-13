@@ -1,0 +1,25 @@
+
+SENTINELX - ANOMALY SCORE DIAGNOSTICS
+
+TEST SEQUENCES: 14722
+
+LABEL DISTRIBUTIONS:
+[{'label': 'Benign', 'count': 4954, 'mean': 0.525419367234558, 'std': 0.17600593261935432, 'minimum': 0.1739576, 'p25': 0.40669636000000003, 'median': 0.497019575, 'p75': 0.6105117175, 'p90': 0.740250983, 'p95': 0.8340051219999994, 'p99': 1.1140566928000002, 'maximum': 2.24316168}, {'label': 'Bot', 'count': 9768, 'mean': 0.4647210425931614, 'std': 0.1681006173212585, 'minimum': 0.15706353, 'p25': 0.344002265, 'median': 0.43598436, 'p75': 0.5566299124999999, 'p90': 0.67801815, 'p95': 0.7626224039999997, 'p99': 1.0374399727999999, 'maximum': 1.58604872}]
+
+HIGHER ERROR = MORE SUSPICIOUS:
+ROC-AUC: 0.38863314400758886
+PR-AUC: 0.6004468094462271
+
+LOWER ERROR = MORE SUSPICIOUS:
+ROC-AUC: 0.6113668559924111
+PR-AUC: 0.7661689257670312
+
+ALWAYS-BOT REFERENCE:
+Accuracy: 0.6634968074989811
+F1: 0.7977133523887301
+
+NOTE:
+These are post-hoc diagnostics on the existing test
+evaluation. They must not be used to tune thresholds
+or select a model. Any future model selection and
+threshold calibration must use training/validation data.

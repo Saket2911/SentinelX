@@ -1,0 +1,49 @@
+SENTINELX - RECURSIVE MULTI-STEP FORECASTING
+======================================================================
+
+Checkpoint: F:\Projects\SentinelX\Models\lstm_world_model_v1\best_model.pt
+Checkpoint epoch: 2
+Device: cuda
+
+Test sequences: 14722
+Input sequence length: 10
+Input features: 206
+
+FORECAST RESULTS
+----------------------------------------------------------------------
+ Horizon_Seconds  Valid_Origins  LSTM_Huber  LSTM_MAE  LSTM_RMSE  Persistence_Huber  Persistence_MAE  Persistence_RMSE  MAE_Improvement_Percent  RMSE_Improvement_Percent
+               1          14693    0.218421  0.485333   0.733978           0.323242         0.568514          0.948053                14.631242                 22.580478
+               2          14693    0.229655  0.498050   0.755121           0.344541         0.596673          0.980728                16.528713                 23.003963
+               5          14693    0.254951  0.528324   0.800932           0.369378         0.632699          1.013396                16.496775                 20.965539
+              10          14693    0.276624  0.553229   0.838743           0.390688         0.660687          1.043750                16.264611                 19.641376
+              30          14693    0.317477  0.602091   0.905459           0.426178         0.709230          1.091803                15.106418                 17.067560
+
+METHODOLOGY
+----------------------------------------------------------------------
+The model predicts one future network state at a time.
+Each predicted state is fed back into the input sequence
+to generate the next prediction.
+
+The persistence baseline repeats the last observed state
+for every forecast horizon.
+
+Only forecasts whose target timestamps are consecutive
+one-second intervals and remain in the same segment are used.
+
+METRIC INTERPRETATION
+----------------------------------------------------------------------
+MAE and RMSE measure numerical forecasting error.
+Positive improvement means the LSTM has lower error
+than the persistence baseline.
+
+IMPORTANT LIMITATIONS
+----------------------------------------------------------------------
+Metrics are calculated in preprocessed feature space.
+Recursive prediction errors can accumulate over time.
+This experiment evaluates numerical future-state forecasting.
+It does not establish attack detection or early-warning accuracy.
+
+The test partition has been used in previous exploratory
+experiments, so these results are not an untouched evaluation.
+
+CSV output: F:\Projects\SentinelX\Models\lstm_world_model_v1\multi_step_forecasting_v1\multi_step_metrics.csv

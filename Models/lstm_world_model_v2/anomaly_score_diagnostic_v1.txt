@@ -1,0 +1,22 @@
+
+VALIDATION
+Samples total: 50870
+Benign count: 35701
+Bot count: 0
+Benign mean: 0.70393882
+Benign median: 0.60411644
+Bot mean: nan
+Bot median: nan
+ROC-AUC: nan
+Average Precision: 0.00000000
+
+TEST
+Samples total: 31406
+Benign count: 11189
+Bot count: 20216
+Benign mean: 0.31542500
+Benign median: 0.28997669
+Bot mean: 0.31529066
+Bot median: 0.29333460
+ROC-AUC: 0.50887968
+Average Precision: 0.64230210

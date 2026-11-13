@@ -1,0 +1,10 @@
+SENTINELX V2 — TEST METRICS BY LABEL
+======================================================================
+Total test samples: 31406
+Checkpoint epoch: 8
+Evaluation device: cuda
+
+   Label  Samples  LSTM Huber  Persistence Huber  Huber Improvement %  LSTM MAE  Persistence MAE  MAE Improvement %  LSTM RMSE  Persistence RMSE  RMSE Improvement %
+  Benign    11189    0.122668           0.184294            33.439214  0.315425         0.359981          12.377201   0.539667          0.698779           22.770046
+     Bot    20216    0.116625           0.169089            31.027353  0.315291         0.346218           8.932959   0.519591          0.659930           21.265734
+NO_FLOWS        1    1.626209           2.004300            18.864000  2.075760         2.394466          13.310105   2.412193          2.868948           15.920640

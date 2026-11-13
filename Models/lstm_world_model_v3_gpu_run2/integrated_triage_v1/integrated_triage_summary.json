@@ -1,0 +1,60 @@
+{
+  "engine": "SentinelX Integrated Threat Triage V1",
+  "status": "INTEGRATION_COMPLETE",
+  "test_observations": 31406,
+  "test_alignment": {
+    "exact_key_matches": 31406,
+    "unmatched_records": 0,
+    "duplicate_keys": 0,
+    "residual_score_match": true
+  },
+  "validation": {
+    "observations": 50870,
+    "review_required": 2332,
+    "within_calibrated_range": 48538,
+    "status_counts": {
+      "WITHIN_CALIBRATED_RANGE": 48538,
+      "REVIEW_REQUIRED": 2332
+    }
+  },
+  "test": {
+    "observations": 31406,
+    "review_required": 1,
+    "within_calibrated_range": 31405,
+    "status_counts": {
+      "WITHIN_CALIBRATED_RANGE": 31405,
+      "REVIEW_REQUIRED": 1
+    }
+  },
+  "decision_method": {
+    "input": "Mean absolute next-state prediction residual",
+    "threshold": 1.88139677,
+    "threshold_source": "Validation benign 99th percentile",
+    "ground_truth_labels_used_for_decisions": false,
+    "model_changed": false
+  },
+  "explainability": {
+    "feature_contributors_per_observation": 5,
+    "temporal_context": "Previous five observations within the same segment.",
+    "comparison_space": "Preprocessed model feature space",
+    "causal_explanation": false
+  },
+  "mitre_context": {
+    "file": "Models/lstm_world_model_v3_gpu_run2/mitre_attack_mapping_v1/mitre_attack_contextual_mapping.csv",
+    "mapping_rows": 17,
+    "policy": "Contextual reference only. Dataset labels do not establish that a specific residual or observation corresponds to an ATT&CK technique."
+  },
+  "limitations": [
+    "A high prediction residual is not proof of malicious activity.",
+    "A low residual does not guarantee benign activity.",
+    "The frozen threshold showed poor transfer to the test split.",
+    "The residual threshold is a review heuristic, not a validated attack detector.",
+    "MITRE mappings are contextual dataset-label references, not per-observation attack classifications.",
+    "Independent network or host evidence is required for security conclusions."
+  ],
+  "outputs": {
+    "integrated_test_triage": "integrated_test_triage.csv",
+    "summary": "integrated_triage_summary.json",
+    "mitre_reference": "Models/lstm_world_model_v3_gpu_run2/mitre_attack_mapping_v1/mitre_attack_contextual_mapping.csv"
+  }
+}

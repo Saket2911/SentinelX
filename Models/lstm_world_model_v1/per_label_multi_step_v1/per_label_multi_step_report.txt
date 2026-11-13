@@ -1,0 +1,44 @@
+SENTINELX - PER-LABEL MULTI-STEP FORECASTING
+======================================================================
+
+Checkpoint: F:\Projects\SentinelX\Models\lstm_world_model_v1\best_model.pt
+Checkpoint epoch: 2
+Device: cuda
+
+Test sequences: 14722
+Input sequence length: 10
+Input features: 206
+
+PER-LABEL RESULTS
+----------------------------------------------------------------------
+ Horizon_Seconds  Label  Sequences  LSTM_Huber  LSTM_MAE  LSTM_RMSE  Persistence_Huber  Persistence_MAE  Persistence_RMSE  MAE_Improvement_Percent  RMSE_Improvement_Percent
+               1 Benign       4954    0.245584  0.525419   0.782986           0.364856         0.622500          1.019447                15.595250                 23.195025
+               1    Bot       9739    0.204603  0.464942   0.707749           0.302073         0.541052          0.909590                14.067056                 22.190343
+               2 Benign       4953    0.255900  0.537336   0.801891           0.390075         0.655895          1.056717                18.075876                 24.114894
+               2    Bot       9740    0.216309  0.478073   0.730190           0.321386         0.566557          0.939731                15.617887                 22.298009
+               5 Benign       4950    0.279026  0.566028   0.841688           0.411067         0.685274          1.083226                17.401249                 22.298009
+               5    Bot       9743    0.242719  0.509168   0.779409           0.348197         0.605987          0.976005                15.977127                 20.142968
+              10 Benign       4945    0.300247  0.590624   0.877408           0.435127         0.717069          1.115896                17.633651                 21.371878
+              10    Bot       9748    0.264640  0.534260   0.818431           0.368145         0.632086          1.005174                15.476745                 18.578158
+              30 Benign       4925    0.364733  0.668085   0.977418           0.469180         0.762473          1.161197                12.379199                 15.826668
+              30    Bot       9768    0.293650  0.568817   0.866914           0.404497         0.682385          1.055085                16.642859                 17.834606
+
+METHODOLOGY
+----------------------------------------------------------------------
+The model recursively predicts future network states.
+Each predicted state becomes part of the next input sequence.
+
+Predictions are grouped by the actual label of the target state.
+The persistence baseline repeats the last observed state.
+
+Only forecasts with consecutive one-second timestamps
+inside the same temporal segment are evaluated.
+
+LIMITATIONS
+----------------------------------------------------------------------
+Metrics are calculated in preprocessed feature space.
+This evaluates numerical forecasting, not attack detection.
+The test partition contains only the labels represented above.
+The test data has been used in previous exploratory experiments.
+
+CSV: F:\Projects\SentinelX\Models\lstm_world_model_v1\per_label_multi_step_v1\per_label_multi_step_metrics.csv

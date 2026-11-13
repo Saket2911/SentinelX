@@ -1,0 +1,60 @@
+SENTINELX V3 — RECURSIVE MULTI-STEP FORECASTING
+========================================================================
+
+Checkpoint: Models/lstm_world_model_v3_gpu_run2/best_model.pt
+Checkpoint epoch: 11
+Device: cpu
+CPU threads: 4
+Training performed: No
+
+Test sequences: 31406
+Sequence length: 10
+Input/output features: 209
+Forecast horizons: [1, 2, 5, 10, 30]
+Total forecast origins: 31377
+Runtime seconds: 26.23
+
+RESULTS
+------------------------------------------------------------------------
+ Horizon_Seconds Target_Label  Valid_Origins  LSTM_Huber  Persistence_Huber  LSTM_MAE  Persistence_MAE  MAE_Improvement_Percent  LSTM_RMSE  Persistence_RMSE  RMSE_Improvement_Percent
+               1          ALL          31377    0.120700           0.177085  0.320655         0.356244                 9.990021   0.531381          0.679075                 21.749286
+               1       Benign          11189    0.125792           0.186940  0.324561         0.365148                11.115226   0.546275          0.703776                 22.379453
+               1          Bot          20187    0.117810           0.171531  0.318409         0.351206                 9.338377   0.522719          0.664696                 21.359687
+               1     NO_FLOWS              1    1.511358           2.033070  1.957837         2.428836                19.391953   2.242886          2.889466                 22.377139
+               2          ALL          31376    0.127512           0.190263  0.329024         0.375837                12.455548   0.547015          0.704235                 22.324868
+               2       Benign          11188    0.133091           0.202190  0.333468         0.388267                14.113747   0.563229          0.732168                 23.073797
+               2          Bot          20187    0.124363           0.183604  0.326493         0.368896                11.494597   0.537652          0.688111                 21.865595
+               2     NO_FLOWS              1    1.287192           1.166336  1.719387         1.427123               -20.479216   1.983067          2.188416                  9.383483
+               5          ALL          31373    0.143839           0.207956  0.351804         0.404552                13.038626   0.582969          0.735970                 20.789053
+               5       Benign          11185    0.148504           0.219898  0.354281         0.415200                14.672232   0.596797          0.763987                 21.883843
+               5          Bot          20187    0.141231           0.201233  0.350399         0.398536                12.078457   0.575107          0.719600                 20.079661
+               5     NO_FLOWS              1    0.616407           2.369294  1.023234         2.767174                63.022409   1.286862          3.390911                 62.049677
+              10          ALL          31368    0.154266           0.221077  0.366178         0.424984                13.837311   0.605177          0.759011                 20.267680
+              10       Benign          11180    0.158910           0.232415  0.368260         0.434931                15.328981   0.618464          0.786084                 21.323512
+              10          Bot          20187    0.151682           0.214689  0.365011         0.419356                12.959154   0.597649          0.743194                 19.583761
+              10     NO_FLOWS              1    0.377281           2.427147  0.637154         2.837760                77.547297   1.188939          3.545761                 66.468711
+              30          ALL          31348    0.169381           0.239346  0.384460         0.453522                15.227752   0.637734          0.789506                 19.223708
+              30       Benign          11160    0.174943           0.251233  0.388153         0.463504                16.256832   0.651738          0.818260                 20.350752
+              30          Bot          20187    0.166213           0.232685  0.382315         0.447905                14.643808   0.629560          0.772908                 18.546594
+              30     NO_FLOWS              1    2.041034           2.048104  2.496034         2.435104                -2.502156   2.824882          2.863179                  1.337573
+
+METHODOLOGY
+------------------------------------------------------------------------
+The trained V3 LSTM predicts the next network state.
+Each predicted state is recursively fed into the next input.
+The persistence baseline repeats the last observed input state.
+A common cohort of 31,377 forecast starting origins is used across all horizons.
+Paths crossing a segment boundary or timestamp gap are excluded at each horizon.
+Valid_Origins reports the remaining evaluated observations for each horizon and label.
+Results are reported overall and by actual future target label.
+
+LIMITATIONS
+------------------------------------------------------------------------
+All metrics are in preprocessed model feature space.
+Recursive errors may accumulate at longer horizons.
+This evaluates numerical future-state forecasting, not attack detection.
+The test partition was used in earlier evaluation and analysis;
+these results are not an untouched independent test.
+
+CSV: Models/lstm_world_model_v3_gpu_run2/multi_step_forecasting_v3_fixed/multi_step_metrics.csv
+Runtime: 26.23 seconds

@@ -1,0 +1,77 @@
+SENTINELX - PREDICTION ERROR ANALYSIS
+=======================================================
+
+MODEL
+Checkpoint epoch: 2
+Device: cuda
+Validation sequences: 14711
+Features: 206
+
+OVERALL VALIDATION ERRORS
+Mean sequence MAE: 0.45288941
+Overall RMSE: 0.69767314
+
+SEQUENCE MAE DISTRIBUTION
+50th percentile: 0.42904782
+75th percentile: 0.53254011
+90th percentile: 0.64525533
+95th percentile: 0.73380306
+99th percentile: 1.01624075
+
+PER-LABEL RESULTS
+
+Benign (6225 sequences)
+  MAE: 0.48279906
+  RMSE: 0.69505231
+  Huber: 0.21642910
+
+Bot (8485 sequences)
+  MAE: 0.43078137
+  RMSE: 0.62483724
+  Huber: 0.18382267
+
+NO_FLOWS (1 sequences)
+  MAE: 1.85194862
+  RMSE: 2.54783773
+  Huber: 1.46598923
+
+TOP 15 FEATURES WITH HIGHEST MAE
+Idle Min__std: MAE=1.07904115, RMSE=1.34928691
+Idle Mean__std: MAE=1.07264594, RMSE=1.34267749
+Idle Max__std: MAE=1.03414916, RMSE=1.29658011
+Flow IAT Mean__std: MAE=0.94047476, RMSE=1.18576077
+Fwd IAT Mean__std: MAE=0.93267996, RMSE=1.17818043
+Flow IAT Min__std: MAE=0.91997079, RMSE=1.16084479
+Fwd IAT Min__std: MAE=0.90580066, RMSE=1.14381950
+Active Mean__std: MAE=0.84038548, RMSE=0.96183386
+Flow IAT Max__std: MAE=0.84011905, RMSE=1.07277359
+Active Max__std: MAE=0.83690567, RMSE=0.95447295
+Fwd IAT Max__std: MAE=0.83589913, RMSE=1.06756406
+Active Mean__max: MAE=0.83534201, RMSE=0.95206768
+Active Max__max: MAE=0.83408458, RMSE=0.94525202
+Active Min__std: MAE=0.83019366, RMSE=0.95850674
+Active Min__max: MAE=0.82762579, RMSE=0.94814286
+
+LOWEST 15 FEATURES BY MAE
+PSH Flag Cnt__max: MAE=0.02407492, RMSE=0.06768405
+Has Flows: MAE=0.02630984, RMSE=0.07689729
+Pkt Len Max__max: MAE=0.06331117, RMSE=0.11913134
+Init Bwd Win Byts__max: MAE=0.07173453, RMSE=0.18684365
+ACK Flag Cnt__max: MAE=0.07208310, RMSE=0.28593471
+Fwd Pkt Len Max__max: MAE=0.10531241, RMSE=0.17117612
+Fwd Pkt Len Max__std: MAE=0.12158070, RMSE=0.20745930
+Fwd Pkt Len Std__std: MAE=0.12496489, RMSE=0.20159259
+Pkt Len Max__std: MAE=0.12599791, RMSE=0.24948836
+Pkt Len Var__std: MAE=0.13865854, RMSE=0.20832465
+Fwd Pkt Len Std__max: MAE=0.14456155, RMSE=0.21705923
+ECE Flag Cnt__max: MAE=0.15018879, RMSE=0.20963796
+Pkt Len Std__max: MAE=0.15241317, RMSE=0.22719738
+Pkt Len Var__max: MAE=0.15253583, RMSE=0.22726128
+RST Flag Cnt__max: MAE=0.15545759, RMSE=0.21435299
+
+OUTPUT FILES
+F:\Projects\SentinelX\Models\lstm_world_model_v1\prediction_error_analysis_v1\feature_error_analysis.csv
+F:\Projects\SentinelX\Models\lstm_world_model_v1\prediction_error_analysis_v1\sequence_error_analysis.csv
+F:\Projects\SentinelX\Models\lstm_world_model_v1\prediction_error_analysis_v1\label_error_analysis.csv
+
+NOTE: Errors are measured in preprocessed feature space. High prediction error alone does not prove malicious activity.

@@ -1,0 +1,33 @@
+{
+    "experiment": "V3 residual-based anomaly scoring",
+    "checkpoint_epoch": 11,
+    "checkpoint": "/mnt/f/Projects/SentinelX/Models/lstm_world_model_v3_gpu_run2/best_model.pt",
+    "device": "cpu",
+    "validation_samples": 50870,
+    "threshold_method": "Benign validation percentile",
+    "threshold_percentile": 99.0,
+    "anomaly_threshold": 1.881396770477295,
+    "score_definition": "Mean absolute residual across 209 features",
+    "detection_metrics_benign_vs_infilteration": {
+        "TP": 88,
+        "TN": 35344,
+        "FP": 357,
+        "FN": 12556,
+        "precision": 0.19775280898876405,
+        "recall": 0.006959822840873141,
+        "specificity": 0.9900002801041987,
+        "false_positive_rate": 0.009999719895801238,
+        "f1_score": 0.013446405378562148,
+        "accuracy": 0.7328989554245527
+    },
+    "label_distribution": {
+        "Benign": 35701,
+        "Infilteration": 12644,
+        "NO_FLOWS": 2525
+    },
+    "no_flows_in_binary_metrics": false,
+    "test_data_used": false,
+    "validation_used_for_threshold_calibration": true,
+    "validation_used_for_exploratory_detection_analysis": true,
+    "evaluation_seconds": 14.503496170043945
+}

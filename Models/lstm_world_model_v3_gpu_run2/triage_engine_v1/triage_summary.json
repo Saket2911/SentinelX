@@ -1,0 +1,30 @@
+{
+    "engine": "SentinelX Threat Triage Engine V1",
+    "threshold": 1.88139677,
+    "validation": {
+        "split": "validation",
+        "total_observations": 50870,
+        "review_required": 2332,
+        "within_calibrated_range": 48538,
+        "review_rate_percent": 4.5842,
+        "frozen_threshold": 1.88139677,
+        "threshold_source": "Validation benign 99th percentile",
+        "decision_input": "Mean absolute LSTM prediction residual",
+        "ground_truth_labels_used_for_decisions": false,
+        "limitation": "Residual-based review is not proof of malicious activity. The threshold showed poor transfer to the held-out test split.",
+        "output_file": "Models/lstm_world_model_v3_gpu_run2/triage_engine_v1/validation_triage.csv"
+    },
+    "test": {
+        "split": "test",
+        "total_observations": 31406,
+        "review_required": 1,
+        "within_calibrated_range": 31405,
+        "review_rate_percent": 0.0032,
+        "frozen_threshold": 1.88139677,
+        "threshold_source": "Validation benign 99th percentile",
+        "decision_input": "Mean absolute LSTM prediction residual",
+        "ground_truth_labels_used_for_decisions": false,
+        "limitation": "Residual-based review is not proof of malicious activity. The threshold showed poor transfer to the held-out test split.",
+        "output_file": "Models/lstm_world_model_v3_gpu_run2/triage_engine_v1/test_triage.csv"
+    }
+}

@@ -1,0 +1,24 @@
+{
+  "artifact": "mitre_attack_contextual_mapping.csv",
+  "labels": 17,
+  "checks": {
+    "exactly_17_labels": true,
+    "no_duplicate_labels": true,
+    "all_inventory_labels_present": true,
+    "Train_Count_matches_inventory": true,
+    "Validation_Count_matches_inventory": true,
+    "Test_Count_matches_inventory": true,
+    "Total_Count_matches_inventory": true,
+    "expected_train_total": true,
+    "expected_validation_total": true,
+    "expected_test_total": true,
+    "all_rationales_present": true,
+    "all_evidence_requirements_present": true,
+    "all_statuses_present": true,
+    "mapped_ids_have_references": true,
+    "infilteration_not_given_single_technique": true
+  },
+  "passed": 15,
+  "total_checks": 15,
+  "result": "PASS"
+}

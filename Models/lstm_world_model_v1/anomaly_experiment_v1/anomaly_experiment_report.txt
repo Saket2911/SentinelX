@@ -1,0 +1,37 @@
+
+SENTINELX - ANOMALY DETECTION EXPERIMENT
+
+Model checkpoint epoch: 2
+
+CALIBRATION:
+Validation benign samples: 6225
+95th percentile threshold: 0.7644613981246948
+99th percentile threshold: 1.0445146560668945
+
+TEST:
+Total sequences: 14722
+Label counts: {np.str_('Benign'): 4954, np.str_('Bot'): 9768}
+
+95TH PERCENTILE RESULTS:
+{'threshold': 0.7644613981246948, 'TP': 478, 'FP': 414, 'TN': 4540, 'FN': 9290, 'precision': 0.5358744394618834, 'recall': 0.04893529893529894, 'f1': 0.08968105065666043, 'false_positive_rate': 0.08356883326604764, 'specificity': 0.9164311667339523, 'accuracy': 0.34085042793098763}
+
+99TH PERCENTILE RESULTS:
+{'threshold': 1.0445146560668945, 'TP': 92, 'FP': 72, 'TN': 4882, 'FN': 9676, 'precision': 0.5609756097560976, 'recall': 0.009418509418509418, 'f1': 0.018525976641159885, 'false_positive_rate': 0.014533710133225677, 'specificity': 0.9854662898667743, 'accuracy': 0.33786170357288414}
+
+SCORING:
+Sequence anomaly score = mean absolute prediction error
+across all 206 preprocessed network-state features.
+
+Anomaly decision:
+Score > threshold means anomaly.
+
+POSITIVE CLASS:
+Bot
+
+IMPORTANT LIMITATIONS:
+This is an experimental evaluation on the available CIC-IDS-2018
+test partition. The test partition contains Benign and Bot labels.
+A high prediction error is not proof of malicious activity.
+
+The threshold was calibrated using benign validation samples
+and was not selected using test labels.

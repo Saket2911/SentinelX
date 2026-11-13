@@ -1,0 +1,43 @@
+SENTINELX V3 — RECURSIVE MULTI-STEP FORECASTING
+========================================================================
+
+Checkpoint: Models/lstm_world_model_v3_gpu_run2/best_model.pt
+Checkpoint epoch: 11
+Device: cpu
+CPU threads: 4
+Training performed: No
+
+Test sequences: 31406
+Sequence length: 10
+Input/output features: 209
+Forecast horizons: [1, 2, 5, 10, 30]
+Total forecast origins: 31377
+Runtime seconds: 27.28
+
+RESULTS
+------------------------------------------------------------------------
+ Horizon_Seconds Target_Label  Valid_Origins  LSTM_Huber  Persistence_Huber  LSTM_MAE  Persistence_MAE  MAE_Improvement_Percent  LSTM_RMSE  Persistence_RMSE  RMSE_Improvement_Percent
+               1          ALL          31377    0.120700           0.177085  0.320655         0.356244                 9.990021   0.531381          0.679075                 21.749286
+               1       Benign          11189    0.125792           0.186940  0.324561         0.365148                11.115226   0.546275          0.703776                 22.379453
+               1          Bot          20187    0.117810           0.171531  0.318409         0.351206                 9.338377   0.522719          0.664696                 21.359687
+               1     NO_FLOWS              1    1.511358           2.033070  1.957837         2.428836                19.391953   2.242886          2.889466                 22.377139
+
+METHODOLOGY
+------------------------------------------------------------------------
+The trained V3 LSTM predicts the next network state.
+Each predicted state is recursively fed into the next input.
+The persistence baseline repeats the last observed input state.
+Only same-segment, exactly one-second-spaced target sequences
+are included for each forecast horizon.
+Results are reported overall and by actual future target label.
+
+LIMITATIONS
+------------------------------------------------------------------------
+All metrics are in preprocessed model feature space.
+Recursive errors may accumulate at longer horizons.
+This evaluates numerical future-state forecasting, not attack detection.
+The test partition was used in earlier evaluation and analysis;
+these results are not an untouched independent test.
+
+CSV: Models/lstm_world_model_v3_gpu_run2/multi_step_forecasting_v3/multi_step_metrics.csv
+Runtime: 27.28 seconds

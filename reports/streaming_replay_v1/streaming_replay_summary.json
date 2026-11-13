@@ -1,0 +1,24 @@
+{
+    "input_file": "Datasets/sentinelx_expanded_train_v1.csv",
+    "checkpoint": "Models/lstm_world_model_v3_gpu_run2/best_model.pt",
+    "device": "cpu",
+    "input_rows": 100,
+    "warmup_observations": 9,
+    "predictions_produced": 91,
+    "sequence_length": 10,
+    "feature_count": 209,
+    "prediction_shape": [
+        209
+    ],
+    "all_predictions_finite": true,
+    "reset_counts": {
+        "segment_change": 0,
+        "timestamp_gap": 0
+    },
+    "latency_ms": {
+        "mean": 51.51826119780817,
+        "median": 47.82131499996467,
+        "maximum": 121.66742299996258
+    },
+    "prediction_csv": "Reports/streaming_replay_v1/streaming_predictions.csv"
+}
