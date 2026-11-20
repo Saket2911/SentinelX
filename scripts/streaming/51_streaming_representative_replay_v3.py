@@ -25,7 +25,7 @@ def main():
     parser.add_argument("--device", default="cpu")
     parser.add_argument(
         "--output-dir",
-        default="Reports/streaming_representative_replay_v1",
+        default="reports/streaming_representative_replay_v1",
     )
     args = parser.parse_args()
 

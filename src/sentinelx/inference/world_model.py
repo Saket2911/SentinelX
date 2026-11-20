@@ -2,9 +2,14 @@ from pathlib import Path
 import math
 
 import numpy as np
-import torch
 
-from sentinelx.models.lstm_world_model_v3 import SentinelXLSTM
+try:
+    import torch
+except Exception as exc:  # pragma: no cover - import is optional
+    torch = None
+    _TORCH_IMPORT_ERROR = exc
+else:
+    _TORCH_IMPORT_ERROR = None
 
 
 def _positive_integer(value, name):
@@ -26,6 +31,13 @@ def load_world_model(
     Returns:
         model, metadata
     """
+    if torch is None:
+        raise RuntimeError(
+            "PyTorch is required to load the SentinelX world model. "
+            "The environment cannot import torch."
+        ) from _TORCH_IMPORT_ERROR
+
+    from sentinelx.models.lstm_world_model_v3 import SentinelXLSTM
 
     checkpoint_path = Path(checkpoint_path)
 
@@ -179,6 +191,11 @@ def predict_next_state(model, sequence):
             Single sequence -> (features,)
             Batch           -> (batch_size, features)
     """
+    if torch is None:
+        raise RuntimeError(
+            "PyTorch is required to run model inference. "
+            "The environment cannot import torch."
+        ) from _TORCH_IMPORT_ERROR
 
     if isinstance(sequence, np.ndarray):
         try:

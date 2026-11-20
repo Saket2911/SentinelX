@@ -1,0 +1,2 @@
+source ~/.venvs/sentinelx/bin/activate
+streamlit run sentinelx_dashboard.py

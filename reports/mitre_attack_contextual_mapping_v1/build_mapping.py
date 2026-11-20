@@ -2,7 +2,7 @@ import csv
 from pathlib import Path
 import pandas as pd
 
-OUT = Path("Reports/mitre_attack_contextual_mapping_v1")
+OUT = Path("reports/mitre_attack_contextual_mapping_v1")
 SPLITS = {
     "train": Path("Datasets/sentinelx_train_metadata_seq10_v3.csv"),
     "validation": Path("Datasets/sentinelx_validation_metadata_seq10_v3.csv"),

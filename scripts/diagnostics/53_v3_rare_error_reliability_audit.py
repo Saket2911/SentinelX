@@ -13,7 +13,7 @@ DATA_DIR = Path("Datasets")
 CHECKPOINT = Path(
     "Models/lstm_world_model_v3_gpu_run2/best_model.pt"
 )
-OUTPUT_DIR = Path("Reports/v3_reliability_audit_v1")
+OUTPUT_DIR = Path("reports/v3_reliability_audit_v1")
 
 EXPECTED_HASH = (
     "19e117e3cc407fe656aa3e6840003031371419a2a367c31128a8b720a900450c"

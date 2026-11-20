@@ -16,7 +16,7 @@ CHECKPOINT = Path(
     "Models/lstm_world_model_v3_gpu_run2/best_model.pt"
 )
 OUTPUT_DIR = Path(
-    "Reports/streaming_direct_integration_v1"
+    "reports/streaming_direct_integration_v1"
 )
 
 EXPECTED_SHA256 = (

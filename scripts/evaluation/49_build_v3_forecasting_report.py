@@ -5,7 +5,7 @@ BASE = Path("Models/lstm_world_model_v3_gpu_run2")
 ANALYSIS = BASE / "multi_step_feature_analysis_v1"
 FORECAST = BASE / "multi_step_forecasting_v3_fixed"
 
-OUT = Path("Reports")
+OUT = Path("reports")
 OUT.mkdir(parents=True, exist_ok=True)
 
 feature = pd.read_csv(ANALYSIS / "feature_wise_metrics.csv")

@@ -25,7 +25,7 @@ def main():
     parser.add_argument("--rows", type=int, default=1000)
     parser.add_argument(
         "--output-dir",
-        default="Reports/streaming_replay_v1",
+        default="reports/streaming_replay_v1",
     )
     parser.add_argument("--device", default="cpu")
     args = parser.parse_args()
