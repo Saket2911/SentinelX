@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { api } from "../api/client";
 import { BarList } from "../components/BarList";
-import { ResidualBarChart } from "../components/Charts";
+import { ResidualBarChart, SERIES_COLOURS } from "../components/Charts";
 import { SelectField } from "../components/Filters";
 import { PageHeader, Panel } from "../components/Panel";
 import { Pill } from "../components/Status";
@@ -165,7 +165,7 @@ export function ExplainabilityPage() {
                 value: entry.mean_absolute,
               }))}
               height={220}
-              color="#5aa9f0"
+              color={SERIES_COLOURS.actual}
             />
           ) : (
             <EmptyState title="Temporal importance unavailable" />

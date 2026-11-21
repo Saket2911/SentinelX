@@ -1,10 +1,15 @@
 import { useState } from "react";
 
 import { api } from "../api/client";
-import { CompareChart, DistributionChart } from "../components/Charts";
+import {
+  CompareChart,
+  DistributionChart,
+  HorizonErrorChart,
+  QuantileCurve,
+} from "../components/Charts";
 import { MetricGrid } from "../components/Metric";
 import { PageHeader, Panel } from "../components/Panel";
-import { Pill } from "../components/Status";
+import { Pill, PriorityPill } from "../components/Status";
 import {
   AvailabilityNotice,
   EmptyState,
@@ -13,7 +18,7 @@ import {
   Loading,
   SourceLine,
 } from "../components/States";
-import { decimal, number, percent } from "../lib/format";
+import { decimal, number, percent, timestamp } from "../lib/format";
 import { useApi } from "../hooks/useApi";
 
 const WINDOW = 180;
@@ -23,6 +28,7 @@ export function PredictionsPage() {
   const [start, setStart] = useState(0);
 
   const summary = useApi(() => api.predictionSummary(), "prediction-summary");
+  const topResiduals = useApi(() => api.topResiduals(10), "prediction-top-residuals");
   const series = useApi(
     () =>
       api.predictionSeries({
@@ -60,6 +66,19 @@ export function PredictionsPage() {
     }));
 
   const features = series.data?.features ?? data.features;
+
+  // Recorded quantiles are a distribution summary that needs no row-level table.
+  const quantiles = data.error_distribution
+    .filter((entry) => entry.kind === "recorded_quantile")
+    .map((entry) => ({ label: `p${Number(entry.quantile)}`, value: Number(entry.value) }));
+
+  const horizonCurve = data.multi_step
+    .filter((row) => row.label === "ALL")
+    .map((row) => ({
+      horizon: Number(row.horizon_seconds),
+      lstm: row.lstm_mae ?? null,
+      persistence: row.persistence_mae ?? null,
+    }));
 
   return (
     <>
@@ -151,11 +170,11 @@ export function PredictionsPage() {
               <CompareChart data={chartData} />
               <div className="legend" style={{ marginTop: 8 }}>
                 <span className="legend-item">
-                  <span className="legend-swatch" style={{ background: "#5aa9f0" }} /> Actual next
+                  <span className="legend-swatch" style={{ background: "#3B82F6" }} /> Actual next
                   state
                 </span>
                 <span className="legend-item">
-                  <span className="legend-swatch" style={{ background: "#3ed3b6" }} /> LSTM forecast
+                  <span className="legend-swatch" style={{ background: "#22D3EE" }} /> LSTM forecast
                 </span>
               </div>
             </>
@@ -204,13 +223,22 @@ export function PredictionsPage() {
       </div>
 
       <div className="grid two">
-        <Panel title="Residual distribution" hint="Histogram of per-observation mean absolute residuals.">
+        <Panel
+          title="Residual distribution"
+          hint={
+            distribution.length
+              ? "Histogram of per-observation mean absolute residuals."
+              : "Recorded residual quantiles from the reliability audit; a per-row table is required for a histogram."
+          }
+        >
           {distribution.length ? (
             <DistributionChart data={distribution} />
+          ) : quantiles.length ? (
+            <QuantileCurve data={quantiles} />
           ) : (
             <EmptyState
-              title="Histogram unavailable"
-              detail="Recorded quantiles are shown in the calibration panel; a per-row table is required for a histogram."
+              title="Distribution unavailable"
+              detail="Neither a per-row residual table nor recorded error quantiles are present for this run."
             />
           )}
         </Panel>
@@ -246,6 +274,72 @@ export function PredictionsPage() {
           )}
         </Panel>
       </div>
+
+      <Panel
+        title="Forecast error by horizon"
+        hint="Recursive forecasting re-feeds each prediction, so error grows with the horizon. Solid line: LSTM. Dashed: persistence baseline (repeat the last state)."
+      >
+        {horizonCurve.length ? (
+          <>
+            <HorizonErrorChart data={horizonCurve} />
+            <div className="legend" style={{ marginTop: 8 }}>
+              <span className="legend-item">
+                <span className="legend-swatch" style={{ background: "#22D3EE" }} /> LSTM forecast MAE
+              </span>
+              <span className="legend-item">
+                <span className="legend-swatch" style={{ background: "#A78BFA" }} /> Persistence MAE
+              </span>
+              <span className="small muted">All labels · common cohort of forecast origins</span>
+            </div>
+          </>
+        ) : (
+          <EmptyState title="No multi-step metrics recorded for this run." />
+        )}
+      </Panel>
+
+      <Panel
+        title="Highest-residual observations"
+        hint="Top-ranked observations by mean absolute next-state residual. Ranking for review, not a classification."
+        flush
+      >
+        {topResiduals.data?.residuals.length ? (
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Step</th>
+                  <th>Timestamp</th>
+                  <th>Dataset label</th>
+                  <th className="num">Mean absolute residual</th>
+                  <th>Priority</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topResiduals.data.residuals.map((row, index) => (
+                  <tr key={`${row.step}-${index}`}>
+                    <td className="mono">{row.step ?? "—"}</td>
+                    <td>{row.timestamp ? timestamp(row.timestamp) : "—"}</td>
+                    <td>{row.label ?? "—"}</td>
+                    <td className="num">{decimal(row.residual)}</td>
+                    <td>
+                      <PriorityPill priority={row.priority} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState
+            title="No row-level residuals available"
+            detail={
+              topResiduals.error ??
+              topResiduals.data?.note ??
+              "Generate the replay table to rank individual observations."
+            }
+          />
+        )}
+      </Panel>
 
       <Panel
         title="Multi-step forecasting"

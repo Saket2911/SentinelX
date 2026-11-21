@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 
 import { api } from "../api/client";
 import { useApi } from "../hooks/useApi";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { Pill } from "./Status";
 
 interface NavItem {
@@ -160,7 +161,9 @@ export function AppShell() {
           </div>
         </header>
         <main className="page">
-          <Outlet />
+          <ErrorBoundary key={location.pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

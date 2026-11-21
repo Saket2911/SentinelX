@@ -58,12 +58,14 @@ export function AvailabilityNotice({
   availability: Availability;
   title?: string;
 }) {
-  if (availability.available) return null;
+  // A reason can accompany available=true when only some artifacts are present.
+  if (availability.available && !availability.reason) return null;
+  const partial = availability.available;
   return (
     <div className="notice warning">
       <span className="notice-icon">!</span>
       <div>
-        <strong>{title}</strong>
+        <strong>{partial ? `${title} — partial artifacts` : title}</strong>
         <div>{availability.reason ?? "The required artifact is not present."}</div>
         {availability.required_artifacts.length ? (
           <ul className="notice-list">

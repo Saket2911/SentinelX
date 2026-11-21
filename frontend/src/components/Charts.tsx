@@ -431,3 +431,105 @@ export function DistributionChart({
     </ResponsiveContainer>
   );
 }
+
+/** Recorded residual quantiles (p50 … p99.9) when row-level data is unavailable. */
+export function QuantileCurve({
+  data,
+  height = 200,
+}: {
+  data: Array<{ label: string; value: number }>;
+  height?: number;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -18 }}>
+        <CartesianGrid {...GRID} vertical={false} />
+        <XAxis dataKey="label" {...AXIS} />
+        <YAxis {...AXIS} width={50} />
+        <Tooltip content={<TooltipBox labelPrefix="Quantile" />} />
+        <Line
+          type="monotone"
+          dataKey="value"
+          name="Mean absolute residual"
+          stroke={SERIES_COLOURS.residual}
+          strokeWidth={1.8}
+          dot={{ r: 2.5 }}
+          isAnimationActive={false}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+/** Measured forecast error across recursive horizons from the recorded multi-step report. */
+export function HorizonErrorChart({
+  data,
+  height = 260,
+}: {
+  data: Array<{ horizon: number; lstm: number | null; persistence: number | null }>;
+  height?: number;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -10 }}>
+        <CartesianGrid {...GRID} vertical={false} />
+        <XAxis dataKey="horizon" {...AXIS} tickFormatter={(value: number) => `${value}s`} />
+        <YAxis
+          {...AXIS}
+          width={54}
+          label={{
+            value: "Mean absolute error",
+            angle: -90,
+            position: "insideLeft",
+            fill: "#65748B",
+            fontSize: 10,
+          }}
+        />
+        <Tooltip content={<TooltipBox labelPrefix="Horizon" />} />
+        <Legend wrapperStyle={LEGEND} />
+        <Line
+          type="monotone"
+          dataKey="lstm"
+          name="LSTM forecast"
+          stroke={SERIES_COLOURS.predicted}
+          strokeWidth={2}
+          dot={{ r: 3 }}
+          isAnimationActive={false}
+        />
+        <Line
+          type="monotone"
+          dataKey="persistence"
+          name="Persistence baseline"
+          stroke={SERIES_COLOURS.history}
+          strokeWidth={1.6}
+          strokeDasharray="4 3"
+          dot={{ r: 3 }}
+          isAnimationActive={false}
+        />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}
+
+/** Grouped bars comparing the world model with the persistence baseline. */
+export function MetricComparisonBars({
+  data,
+  height = 240,
+}: {
+  data: Array<{ metric: string; lstm: number | null; persistence: number | null }>;
+  height?: number;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -14 }}>
+        <CartesianGrid {...GRID} vertical={false} />
+        <XAxis dataKey="metric" {...AXIS} />
+        <YAxis {...AXIS} width={50} />
+        <Tooltip content={<TooltipBox labelPrefix="Metric" />} />
+        <Legend wrapperStyle={LEGEND} />
+        <Bar dataKey="lstm" name="LSTM world model" fill={SERIES_COLOURS.actual} radius={[2, 2, 0, 0]} isAnimationActive={false} />
+        <Bar dataKey="persistence" name="Persistence baseline" fill={SERIES_COLOURS.history} radius={[2, 2, 0, 0]} isAnimationActive={false} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}

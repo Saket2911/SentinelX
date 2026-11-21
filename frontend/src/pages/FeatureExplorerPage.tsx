@@ -53,7 +53,8 @@ export function FeatureExplorerPage() {
   );
   const contributors = useApi(() => api.replayContributors(15), "explorer-contributors");
 
-  const totalStates = series.data?.window.total_states ?? meta.data?.total_states ?? 0;
+  // Unavailable payloads omit `window`; never dereference it unguarded.
+  const totalStates = series.data?.window?.total_states ?? meta.data?.total_states ?? 0;
 
   const compareData = useMemo(
     () => (series.data?.points ?? []).map((point) => ({ index: point.step, actual: point.actual, predicted: point.predicted })),

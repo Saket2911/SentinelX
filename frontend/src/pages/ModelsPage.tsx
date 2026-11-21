@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { api } from "../api/client";
 import type { ModelSummary } from "../api/types";
+import { HorizonErrorChart, MetricComparisonBars } from "../components/Charts";
 import { HealthPill, Pill } from "../components/Status";
 import { ConfirmDialog, Drawer } from "../components/Overlay";
 import { PageHeader, Panel } from "../components/Panel";
@@ -36,6 +37,16 @@ export function ModelsPage() {
   const data = listing.data;
   if (!data) return <EmptyState title="No model registry data returned." />;
 
+  const activeModel = data.models.find((model) => model.active) ?? data.models[0];
+  const comparisonBars = (["mae", "rmse", "huber_loss"] as const)
+    .map((key) => ({
+      metric: key === "huber_loss" ? "Huber" : key.toUpperCase(),
+      lstm: activeModel?.test_metrics ? Number(activeModel.test_metrics.lstm?.[key] ?? NaN) : NaN,
+      persistence: activeModel?.test_metrics
+        ? Number(activeModel.test_metrics.persistence?.[key] ?? NaN)
+        : NaN,
+    }))
+    .filter((row) => Number.isFinite(row.lstm) && Number.isFinite(row.persistence));
 
   return (
     <>
@@ -76,6 +87,15 @@ export function ModelsPage() {
           />
         </Panel>
       )}
+
+      {comparisonBars.length ? (
+        <Panel
+          title="Held-out test error: LSTM vs persistence"
+          hint={`${activeModel?.run_id ?? "active run"} · recorded one-step metrics in preprocessed model space. Lower is better.`}
+        >
+          <MetricComparisonBars data={comparisonBars} />
+        </Panel>
+      ) : null}
 
       <Panel title="Controlled comparison" hint="Compare two runs without blending their feature contracts.">
         <div className="toolbar">
@@ -364,6 +384,18 @@ function ModelDrawer({
                   </tbody>
                 </table>
               </div>
+              <MetricComparisonBars
+                data={(["mae", "rmse", "huber_loss"] as const)
+                  .map((key) => ({
+                    metric: key === "huber_loss" ? "Huber" : key.toUpperCase(),
+                    lstm: Number(test.lstm[key] ?? NaN),
+                    persistence: Number(test.persistence[key] ?? NaN),
+                  }))
+                  .filter(
+                    (row) => Number.isFinite(row.lstm) && Number.isFinite(row.persistence),
+                  )}
+                height={200}
+              />
               <p className="small muted" style={{ marginTop: 6 }}>
                 {number(test.samples)} sequences · {test.space}. Test partition was previously used for
                 exploratory analysis.
@@ -397,6 +429,16 @@ function ModelDrawer({
                     </Pill>
                   ))}
               </div>
+              <HorizonErrorChart
+                data={data.multi_step
+                  .filter((row) => row.label === "ALL")
+                  .map((row) => ({
+                    horizon: Number(row.horizon_seconds),
+                    lstm: row.lstm_mae ?? null,
+                    persistence: row.persistence_mae ?? null,
+                  }))}
+                height={200}
+              />
             </div>
           ) : null}
 

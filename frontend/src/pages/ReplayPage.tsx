@@ -65,16 +65,24 @@ export function ReplayPage() {
   useEffect(() => {
     if (!playing) return;
     const timer = window.setInterval(() => {
-      setStep((current) => {
-        if (current >= maxStep) {
-          setPlaying(false);
-          return current;
-        }
-        return current + 1;
-      });
+      setStep((current) => Math.min(current + 1, maxStep));
     }, Math.round(900 / speed));
     return () => window.clearInterval(timer);
   }, [playing, speed, maxStep]);
+
+  // Stop at the last state from an effect, never from inside a state updater.
+  useEffect(() => {
+    if (playing && step >= maxStep) setPlaying(false);
+  }, [playing, step, maxStep]);
+
+  function togglePlay() {
+    if (playing) {
+      setPlaying(false);
+      return;
+    }
+    if (step >= maxStep) setStep(minStep);
+    setPlaying(true);
+  }
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -82,7 +90,7 @@ export function ReplayPage() {
       if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
       if (event.code === "Space") {
         event.preventDefault();
-        setPlaying((value) => !value);
+        togglePlay();
       } else if (event.key === "ArrowRight") {
         setPlaying(false);
         setStep((value) => Math.min(maxStep, value + 1));
@@ -93,7 +101,8 @@ export function ReplayPage() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [maxStep, minStep]);
+    // togglePlay closes over the current step/playing values.
+  }, [maxStep, minStep, step, playing]);
 
   const features = meta.data?.features ?? [];
   const state = stateData.data?.state ?? null;
@@ -212,9 +221,14 @@ export function ReplayPage() {
                 <button
                   type="button"
                   className="btn primary play"
-                  onClick={() => setPlaying((value) => !value)}
-                  disabled={step >= maxStep && !playing}
-                  title={playing ? "Pause (Space)" : "Play (Space)"}
+                  onClick={togglePlay}
+                  title={
+                    playing
+                      ? "Pause (Space)"
+                      : step >= maxStep
+                        ? "Replay from the first state (Space)"
+                        : "Play (Space)"
+                  }
                 >
                   {playing ? "❚❚ Pause" : "▶ Play"}
                 </button>
