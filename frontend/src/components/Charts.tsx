@@ -37,11 +37,18 @@ function TooltipBox({
   payload,
   label,
   labelPrefix,
+  format,
 }: {
   active?: boolean;
-  payload?: Array<{ name?: string; value?: number | string; color?: string }>;
+  payload?: Array<{
+    dataKey?: string | number;
+    name?: string;
+    value?: number | string;
+    color?: string;
+  }>;
   label?: string | number;
   labelPrefix?: string;
+  format?: Record<string, (value: number) => string>;
 }) {
   if (!active || !payload?.length) return null;
   return (
@@ -49,14 +56,19 @@ function TooltipBox({
       <div className="label">
         {labelPrefix ?? "Index"} {label}
       </div>
-      {payload.map((entry) => (
-        <div className="row" key={`${entry.name}-${entry.value}`}>
-          <span style={{ color: entry.color }}>{entry.name}</span>
-          <span>
-            {typeof entry.value === "number" ? entry.value.toFixed(4) : entry.value}
-          </span>
-        </div>
-      ))}
+      {payload.map((entry) => {
+        const formatter = entry.dataKey ? format?.[String(entry.dataKey)] : undefined;
+        return (
+          <div className="row" key={`${entry.name}-${entry.value}`}>
+            <span style={{ color: entry.color }}>{entry.name}</span>
+            <span>
+              {typeof entry.value === "number"
+                ? (formatter ? formatter(entry.value) : entry.value.toFixed(4))
+                : entry.value}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -72,15 +84,20 @@ export function ActivityChart({
   valueLabel?: string;
   secondaryLabel?: string;
 }) {
+  // Residuals are small (model space) while the label share is 0–100%. They must
+  // never share an axis: a 100% share would flatten the residual line onto zero.
   const shaped = data.map((point) => ({
     index: point.index,
-    value: point.value,
+    value: typeof point.value === "number" && Number.isFinite(point.value) ? point.value : null,
     secondary:
-      point.secondary === null || point.secondary === undefined ? null : point.secondary * 100,
+      point.secondary === null || point.secondary === undefined
+        ? null
+        : point.secondary * 100,
   }));
+  const hasShare = shaped.some((point) => point.secondary !== null);
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <ComposedChart data={shaped} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
+      <ComposedChart data={shaped} margin={{ top: 8, right: 4, bottom: 0, left: -10 }}>
         <defs>
           <linearGradient id="residualFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={SERIES_COLOURS.predicted} stopOpacity={0.3} />
@@ -89,27 +106,63 @@ export function ActivityChart({
         </defs>
         <CartesianGrid {...GRID} vertical={false} />
         <XAxis dataKey="index" {...AXIS} />
-        <YAxis {...AXIS} width={46} />
-        <Tooltip content={<TooltipBox labelPrefix="Bucket" />} />
+        <YAxis
+          yAxisId="residual"
+          {...AXIS}
+          width={50}
+          domain={["auto", "auto"]}
+          allowDecimals
+          tickFormatter={(value: number) =>
+            Math.abs(value) >= 10 ? value.toFixed(0) : value.toFixed(2)
+          }
+        />
+        {hasShare ? (
+          <YAxis
+            yAxisId="share"
+            orientation="right"
+            {...AXIS}
+            width={42}
+            domain={[0, 100]}
+            ticks={[0, 25, 50, 75, 100]}
+            tickFormatter={(value: number) => `${value}%`}
+          />
+        ) : null}
+        <Tooltip
+          content={
+            <TooltipBox
+              labelPrefix="Bucket"
+              format={{
+                value: (value) => value.toFixed(4),
+                secondary: (value) => `${value.toFixed(0)}%`,
+              }}
+            />
+          }
+        />
+        <Legend wrapperStyle={LEGEND} />
         <Area
+          yAxisId="residual"
           type="monotone"
           dataKey="value"
           name={valueLabel}
           stroke={SERIES_COLOURS.predicted}
           strokeWidth={1.6}
           fill="url(#residualFill)"
-          dot={false}
+          dot={shaped.length <= 2 ? { r: 3 } : false}
           isAnimationActive={false}
         />
-        <Line
-          type="monotone"
-          dataKey="secondary"
-          name={secondaryLabel}
-          stroke={SERIES_COLOURS.history}
-          strokeWidth={1}
-          dot={false}
-          isAnimationActive={false}
-        />
+        {hasShare ? (
+          <Line
+            yAxisId="share"
+            type="monotone"
+            dataKey="secondary"
+            name={secondaryLabel}
+            stroke={SERIES_COLOURS.history}
+            strokeWidth={1.2}
+            strokeDasharray="4 3"
+            dot={shaped.length <= 2 ? { r: 3 } : false}
+            isAnimationActive={false}
+          />
+        ) : null}
       </ComposedChart>
     </ResponsiveContainer>
   );
@@ -142,7 +195,7 @@ export function CompareChart({
           name={actualLabel}
           stroke={SERIES_COLOURS.actual}
           strokeWidth={1.5}
-          dot={false}
+          dot={data.length <= 2 ? { r: 3 } : false}
           isAnimationActive={false}
         />
         <Line
@@ -152,7 +205,7 @@ export function CompareChart({
           stroke={SERIES_COLOURS.predicted}
           strokeWidth={1.5}
           strokeDasharray="4 3"
-          dot={false}
+          dot={data.length <= 2 ? { r: 3 } : false}
           isAnimationActive={false}
         />
       </LineChart>
@@ -259,7 +312,7 @@ export function ThresholdTrendChart({
           stroke={SERIES_COLOURS.residual}
           strokeWidth={1.5}
           fill="url(#windowFill)"
-          dot={false}
+          dot={data.length <= 2 ? { r: 3 } : false}
           isAnimationActive={false}
         />
         {typeof threshold === "number" ? (
@@ -302,7 +355,7 @@ export function SignedResidualChart({
           name="Signed residual (actual − predicted)"
           stroke={SERIES_COLOURS.actual}
           strokeWidth={1.4}
-          dot={false}
+          dot={data.length <= 2 ? { r: 3 } : false}
           isAnimationActive={false}
         />
         <Line
@@ -311,7 +364,7 @@ export function SignedResidualChart({
           name="Absolute residual"
           stroke={SERIES_COLOURS.residual}
           strokeWidth={1.2}
-          dot={false}
+          dot={data.length <= 2 ? { r: 3 } : false}
           isAnimationActive={false}
         />
       </LineChart>
