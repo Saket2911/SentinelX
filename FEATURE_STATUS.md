@@ -10,7 +10,7 @@ checkout · **Planned** = not implemented and not claimed.
 | --- | --- | --- |
 | SOC dashboard | Implemented | Posture, metrics, residual activity, model health, dataset readiness, recent candidates, limits |
 | Network monitoring | Conditional | State-plane metrics with a replay table; protocol/port panel needs the raw flow CSV |
-| Network state playback | Conditional | Play/pause/reset, first/previous/next/last, timeline slider, speed, step and timestamp, per-state contributors and full 209-feature table; needs `replay_arrays.npz` + `sentinelx_test_sequences_v3.npy` |
+| Network state playback | Conditional | Play/pause/reset, first/previous/next/last, timeline slider, speed, step and timestamp, per-state contributors and full 209-feature table; needs `replay_arrays.npz` + `sentinelx_test_X_seq10_v3.npy` |
 | Feature explorer | Conditional | Feature picker, actual vs predicted, signed/absolute residuals, largest errors, contributor ranking; needs the replay arrays |
 | Predictive intelligence | Implemented | Recorded metrics, multi-step table, calibration; actual-vs-predicted needs the replay table |
 | Threat triage | Conditional | Threshold candidates need a replay/triage CSV; empty state explains the frozen-threshold recall caveat |

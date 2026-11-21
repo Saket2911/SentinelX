@@ -152,9 +152,9 @@ DATASET_ARTIFACTS: tuple[tuple[str, str, str], ...] = (
     ("train_metadata", "Training sequence metadata", "sentinelx_train_metadata_seq10_v3.csv"),
     ("validation_metadata", "Validation sequence metadata", "sentinelx_validation_metadata_seq10_v3.csv"),
     ("test_metadata", "Test sequence metadata", "sentinelx_test_metadata_seq10_v3.csv"),
-    ("train_sequences", "Training sequence arrays", "sentinelx_train_sequences_v3.npy"),
-    ("validation_sequences", "Validation sequence arrays", "sentinelx_validation_sequences_v3.npy"),
-    ("test_sequences", "Test sequence arrays", "sentinelx_test_sequences_v3.npy"),
+    ("train_sequences", "Training sequence arrays", "sentinelx_train_X_seq10_v3.npy"),
+    ("validation_sequences", "Validation sequence arrays", "sentinelx_validation_X_seq10_v3.npy"),
+    ("test_sequences", "Test sequence arrays", "sentinelx_test_X_seq10_v3.npy"),
     ("multiday_states", "Expanded network states", "sentinelx_expanded_states_v3.csv"),
 )
 

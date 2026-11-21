@@ -1,9 +1,10 @@
 """Per-state historical replay.
 
 The research pipeline stores the ten-state inputs and the model's next-state
-outputs in ``historical_replay_v1/replay_arrays.npz`` and
-``Datasets/sentinelx_test_sequences_v3.npy``. This service exposes them one
-state at a time so the console can play through held-out network activity.
+outputs in ``historical_replay_v1/replay_arrays.npz`` and the frozen test
+sequences in ``Datasets/sentinelx_test_X_seq10_v3.npy``. This service exposes
+them one state at a time so the console can play through held-out network
+activity.
 
 Nothing here is simulated: when an array is missing or inconsistent, the service
 reports exactly which artifact is required and refuses to serve values.
@@ -25,7 +26,9 @@ from .replay import load_replay
 
 REPLAY_DIR = "historical_replay_v1"
 REPLAY_ARRAYS = f"{REPLAY_DIR}/replay_arrays.npz"
-SEQUENCE_ARRAYS = "sentinelx_test_sequences_v3.npy"
+SEQUENCE_ARRAYS = "sentinelx_test_X_seq10_v3.npy"
+# Name used by earlier console builds; still honoured when present.
+SEQUENCE_ALIASES = ("sentinelx_test_sequences_v3.npy",)
 MANIFEST = f"{REPLAY_DIR}/replay_manifest.json"
 
 LIMITATIONS = [
@@ -110,7 +113,7 @@ def _number(value: Any) -> float | None:
     return number if np.isfinite(number) else None
 
 
-_cache: dict[str, tuple[tuple[int, int, int], ReplayBundle]] = {}
+_cache: dict[str, tuple[tuple[int, int, int, str], ReplayBundle]] = {}
 _lock = threading.RLock()
 
 
@@ -119,11 +122,21 @@ def reset_cache() -> None:
         _cache.clear()
 
 
-def _signature(arrays: Path, sequences: Path, table: Path) -> tuple[int, int, int]:
+def _sequences_path(datasets_dir: Path) -> Path:
+    """Resolve the frozen test sequences under their real or legacy filename."""
+    for name in (SEQUENCE_ARRAYS, *SEQUENCE_ALIASES):
+        path = datasets_dir / name
+        if path.is_file():
+            return path
+    return datasets_dir / SEQUENCE_ARRAYS
+
+
+def _signature(arrays: Path, sequences: Path, table: Path) -> tuple[int, int, int, str]:
     return (
         arrays.stat().st_mtime_ns if arrays.is_file() else 0,
         sequences.stat().st_mtime_ns if sequences.is_file() else 0,
         table.stat().st_mtime_ns if table.is_file() else 0,
+        str(sequences),
     )
 
 
@@ -133,7 +146,7 @@ def _load(store: ArtifactStore, run_id: str) -> tuple[ReplayBundle | None, list[
         return None, [], f"Unknown model run {run_id}."
 
     arrays_path = run.directory / REPLAY_ARRAYS
-    sequences_path = store.datasets_dir / SEQUENCE_ARRAYS
+    sequences_path = _sequences_path(store.datasets_dir)
     frame = load_replay(store, run_id)
     if frame is None:
         return (

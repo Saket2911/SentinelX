@@ -185,7 +185,7 @@ def workspace(tmp_path: Path) -> Settings:
         actual=actual,
         feature_names=np.array(feature_names),
     )
-    np.save(datasets / "sentinelx_test_sequences_v3.npy", sequences)
+    np.save(datasets / "sentinelx_test_X_seq10_v3.npy", sequences)
     _write_json(
         replay_dir / "replay_manifest.json",
         {

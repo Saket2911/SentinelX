@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+from app.services.playback import reset_cache
+
 
 def test_meta_describes_replay_timeline(client: TestClient) -> None:
     response = client.get("/api/replay/meta")
@@ -142,6 +144,17 @@ def test_series_falls_back_to_first_feature(client: TestClient) -> None:
     response = client.get("/api/replay/series", params={"feature": "does-not-exist", "limit": 2})
     assert response.status_code == 200
     assert response.json()["feature"] == "Flow Count"
+
+
+def test_playback_accepts_legacy_sequence_filename(workspace, client: TestClient) -> None:
+    datasets = workspace.datasets_dir
+    legacy = datasets / "sentinelx_test_sequences_v3.npy"
+    (datasets / "sentinelx_test_X_seq10_v3.npy").rename(legacy)
+    reset_cache()
+
+    payload = client.get("/api/replay/meta").json()
+    assert payload["availability"]["available"] is True
+    assert payload["sequence_length"] == 10
 
 
 def test_playback_reports_unavailable_without_artifacts(empty_client: TestClient) -> None:

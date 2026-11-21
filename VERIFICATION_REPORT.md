@@ -110,7 +110,7 @@ explorer in the console.
 
 | Item | Evidence |
 | --- | --- |
-| Per-state replay API | `GET /api/replay/meta`, `/state`, `/series`, `/contributors` serve `replay_arrays.npz` + `sentinelx_test_sequences_v3.npy` with availability blocks when absent |
+| Per-state replay API | `GET /api/replay/meta`, `/state`, `/series`, `/contributors` serve `replay_arrays.npz` + `sentinelx_test_X_seq10_v3.npy` with availability blocks when absent |
 | Playback page | `/replay`: play/pause, first/previous/next/last, reset, timeline slider, speed 1–8×, step counter, timestamp, segment, capture day, reference label, residual and threshold; charts update per state |
 | Feature explorer | `/explorer`: feature picker, window navigation, MAE/median/max cards, actual-vs-predicted, signed/absolute residuals, scatter, largest-error table linking into playback, contributor ranking |
 | Design system | Tokens re-based on the specified navy/charcoal palette; grouped sidebar, compact header with dataset mode, active model, review-candidate count and API health |
