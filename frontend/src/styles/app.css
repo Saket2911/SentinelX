@@ -1292,10 +1292,37 @@ table.table {
 }
 
 .progress-track {
-  height: 4px;
+  position: relative;
+  height: 6px;
   border-radius: 999px;
   background: var(--border);
-  overflow: hidden;
+  overflow: visible;
+  margin: 4px 0;
+}
+
+.timeline-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--bg-elevated);
+  cursor: pointer;
+  background: var(--warn);
+  box-shadow: 0 0 0 1px rgba(9, 14, 24, 0.8);
+}
+
+.timeline-marker.medium { background: var(--warn); }
+.timeline-marker.high { background: var(--orange, #F97316); }
+.timeline-marker.critical { background: var(--danger); }
+
+.timeline-marker:hover,
+.timeline-marker:focus-visible {
+  outline: 2px solid var(--accent-line);
+  outline-offset: 2px;
+  z-index: 2;
 }
 
 .progress-fill {

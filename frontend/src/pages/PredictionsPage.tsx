@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import { api } from "../api/client";
 import {
+  AnomalyScoreChart,
   CompareChart,
   DistributionChart,
   HorizonErrorChart,
@@ -29,6 +31,7 @@ export function PredictionsPage() {
 
   const summary = useApi(() => api.predictionSummary(), "prediction-summary");
   const topResiduals = useApi(() => api.topResiduals(10), "prediction-top-residuals");
+  const anomalies = useApi(() => api.anomalySeries(), "prediction-anomalies");
   const series = useApi(
     () =>
       api.predictionSeries({
@@ -221,6 +224,60 @@ export function PredictionsPage() {
           </Panel>
         </div>
       </div>
+
+      <Panel
+        title="Anomaly score across the replay"
+        hint="Mean absolute next-state residual per state, with the frozen calibrated threshold and the states that crossed it."
+      >
+        {anomalies.error ? (
+          <ErrorState message={anomalies.error} onRetry={anomalies.reload} />
+        ) : anomalies.data?.points.length ? (
+          <>
+            <AnomalyScoreChart
+              data={anomalies.data.points}
+              threshold={anomalies.data.threshold}
+              alerts={(anomalies.data.points ?? [])
+                .map((point) => point.alert_id)
+                .filter((value): value is string => Boolean(value))}
+            />
+            <div className="inline" style={{ marginTop: 8, flexWrap: "wrap" }}>
+              <Pill tone="neutral">
+                {number(anomalies.data.summary.states)} states · mean score{" "}
+                {decimal(anomalies.data.summary.mean_score, 4)} · max{" "}
+                {decimal(anomalies.data.summary.max_score, 4)}
+              </Pill>
+              <Pill tone="warning">
+                {number(anomalies.data.summary.flagged)} state(s) at/above threshold
+              </Pill>
+              <Pill tone="info">
+                {number(anomalies.data.summary.persisted_alerts)} persisted playback alert(s)
+              </Pill>
+            </div>
+            {anomalies.data.flagged_steps.length ? (
+              <div className="tag-row" style={{ marginTop: 8 }}>
+                {anomalies.data.flagged_steps.map((step) => (
+                  <Link key={step} className="pill critical" to={`/replay?step=${step}`}>
+                    Step {step} · open replay
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="small muted" style={{ marginTop: 8 }}>
+                No state crossed the calibrated threshold in this replay. That is not evidence that
+                the capture was benign: the recorded evaluation also found 0 labelled Bot states at
+                this threshold.
+              </p>
+            )}
+          </>
+        ) : anomalies.loading ? (
+          <Loading rows={4} />
+        ) : (
+          <EmptyState
+            title="Anomaly history unavailable"
+            detail={anomalies.data?.availability.reason ?? "No replay arrays are available for this run."}
+          />
+        )}
+      </Panel>
 
       <div className="grid two">
         <Panel

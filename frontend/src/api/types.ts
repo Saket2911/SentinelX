@@ -126,6 +126,21 @@ export interface Dashboard {
     available: boolean;
     reason: string | null;
   };
+  alerts: {
+    available: boolean;
+    reason: string | null;
+    total: number;
+    high_priority: number;
+    unresolved: number;
+    severity_counts: Record<string, number>;
+    status_counts: Record<string, number>;
+    recent: PlaybackAlert[];
+    daily: Array<{ day: string; count: number }>;
+    threshold: number | null;
+    threshold_source: string;
+    rules: PlaybackConditions["rules"];
+    limitations: string[];
+  };
   limitations: string[];
 }
 
@@ -364,6 +379,183 @@ export interface EventDetail {
   availability: Availability;
   event: SecurityEvent;
   history: Array<{ actor: string; action: string; from_value: string | null; to_value: string | null; created_at: string }>;
+  limitations: string[];
+}
+
+export type AlertSeverity = "medium" | "high" | "critical";
+
+export interface PlaybackAlertFeature {
+  feature: string;
+  actual: number;
+  predicted: number;
+  signed_residual: number;
+  absolute_error: number;
+  share_percent: number;
+}
+
+export interface PlaybackAlert {
+  alert_id: string;
+  run_id: string;
+  session_id: string;
+  dataset_id: string;
+  model_version: string;
+  target_step: number;
+  target_index: number;
+  timestamp: string | null;
+  segment_id: string | null;
+  dataset_label: string | null;
+  capture_day: string | null;
+  anomaly_score: number;
+  threshold: number | null;
+  ratio: number | null;
+  severity: AlertSeverity;
+  trigger_reason: string;
+  status: EventStatus;
+  assignee: string | null;
+  notes: string | null;
+  features: PlaybackAlertFeature[];
+  prediction_source: string;
+  predicted_ref: string | null;
+  actual_ref: string | null;
+  context_ref: string | null;
+  source: Source;
+  created_at: string;
+  updated_at: string;
+  limitations: string[];
+}
+
+export interface PlaybackScore {
+  method: string;
+  space: string;
+  anomaly_score: number;
+  mse: number;
+  rmse: number;
+  mean_signed_residual: number;
+  max_absolute_error: number;
+  feature_count: number;
+  feature_residuals: PlaybackAlertFeature[];
+}
+
+export interface PlaybackConditions {
+  available: boolean;
+  reason: string | null;
+  triggered: boolean;
+  single_threshold: boolean;
+  persistence: boolean;
+  same_segment?: boolean;
+  severity: AlertSeverity | null;
+  trigger: string | null;
+  reasons: string[];
+  recent_scores: number[];
+  ratio?: number;
+  elevated_threshold?: number;
+  threshold?: number;
+  score?: number;
+  rules: {
+    rule_version: string;
+    persistence_window: number;
+    elevated_ratio: number;
+    high_ratio: number;
+    critical_ratio: number;
+  };
+}
+
+export interface ShapContext {
+  available: boolean;
+  reason?: string;
+  note: string;
+  source?: string;
+  label?: string | null;
+  matches?: Array<{ feature: string; mean_absolute_shap: number }>;
+  top_features?: Array<{ feature: string; mean_absolute_shap: number }>;
+}
+
+export interface PlaybackEvaluation {
+  source: Source;
+  availability: Availability;
+  run_id: string;
+  model_version: string;
+  dataset_id: string;
+  step: number;
+  state: {
+    step: number;
+    index: number;
+    total_states: number;
+    timestamp: string | null;
+    capture_day: string | null;
+    segment_id: string;
+    dataset_label: string;
+    threshold: number | null;
+    feature_count: number;
+  };
+  prediction: {
+    source: string;
+    source_detail: string;
+    model_version: string;
+    sequence_length: number;
+    features: number;
+    target_step: number;
+  };
+  actual: { step: number; timestamp: string | null; reference: string | null };
+  context: {
+    states_used: number;
+    first_input_step: number;
+    last_input_step: number;
+    target_step: number;
+    segment_ids: string[];
+    segment_consistent: boolean;
+    reference: string | null;
+  };
+  score: PlaybackScore;
+  conditions: PlaybackConditions;
+  alert: PlaybackAlert | null;
+  deduplicated: boolean;
+  explainability: { shap: ShapContext };
+  limitations: string[];
+}
+
+export interface PlaybackAlertList {
+  run_id: string;
+  alerts: PlaybackAlert[];
+  total: number;
+  rules: PlaybackConditions["rules"];
+  limitations: string[];
+}
+
+export interface PlaybackAlertDetail {
+  alert: PlaybackAlert;
+  history: Array<{ actor: string; action: string; from_value: string | null; to_value: string | null; created_at: string }>;
+  explainability?: { shap: ShapContext };
+  limitations: string[];
+}
+
+export interface AnomalySeries {
+  source: Source;
+  availability: Availability;
+  run_id: string;
+  threshold: number | null;
+  threshold_source: string;
+  method: string;
+  space: string;
+  flagged_steps: number[];
+  alert_steps: number[];
+  points: Array<{
+    index: number;
+    step: number;
+    timestamp: string | null;
+    segment_id: string;
+    label: string;
+    anomaly_score: number;
+    flagged: boolean;
+    alert_id: string | null;
+  }>;
+  summary: {
+    states: number;
+    mean_score: number;
+    max_score: number;
+    flagged: number;
+    persisted_alerts: number;
+  };
   limitations: string[];
 }
 

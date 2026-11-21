@@ -257,6 +257,17 @@ def _load(store: ArtifactStore, run_id: str) -> tuple[ReplayBundle | None, list[
     return bundle, [], None
 
 
+def bundle(store: ArtifactStore, run_id: str) -> ReplayBundle:
+    """Return the cached replay bundle or raise an explicit artifact error."""
+    value, missing, reason = _load(store, run_id)
+    if value is None:
+        detail = reason or "Replay arrays unavailable."
+        if missing:
+            detail = f"{detail} Required: {', '.join(missing)}"
+        raise ArtifactError(detail)
+    return value
+
+
 def _unavailable(run_id: str, missing: list[str], reason: str, **extra: Any) -> dict[str, Any]:
     return {
         "source": {

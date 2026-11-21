@@ -1,4 +1,5 @@
 import type {
+  AnomalySeries,
   Capabilities,
   Dashboard,
   DatasetOverview,
@@ -7,6 +8,9 @@ import type {
   EventList,
   EventStatus,
   Explainability,
+  PlaybackAlertDetail,
+  PlaybackAlertList,
+  PlaybackEvaluation,
   Health,
   ModelDetail,
   ModelSummary,
@@ -149,6 +153,37 @@ export const api = {
   replaySeries: (
     params: { feature?: string; start?: number; limit?: number; run_id?: string } = {},
   ) => request<ReplaySeries>(`/replay/series${query(params)}`),
+  evaluatePlayback: (step: number, runId?: string) =>
+    request<PlaybackEvaluation>("/playback/evaluate", {
+      method: "POST",
+      body: JSON.stringify({ step, run_id: runId }),
+    }),
+  playbackAlerts: (
+    params: {
+      run_id?: string;
+      status?: string;
+      severity?: string;
+      dataset_id?: string;
+      target_step?: number;
+      since?: string;
+      until?: string;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ) => request<PlaybackAlertList>(`/playback/alerts${query(params)}`),
+  playbackAlert: (alertId: string) =>
+    request<PlaybackAlertDetail>(`/playback/alerts/${encodeURIComponent(alertId)}`),
+  updatePlaybackAlert: (
+    alertId: string,
+    payload: { status?: EventStatus; assignee?: string | null; notes?: string | null; actor?: string },
+  ) =>
+    request<PlaybackAlertDetail>(`/playback/alerts/${encodeURIComponent(alertId)}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  anomalySeries: (runId?: string) =>
+    request<AnomalySeries>(`/playback/anomalies${query({ run_id: runId })}`),
+
   replayContributors: (limit = 15, runId?: string) =>
     request<{ run_id: string; contributors: ReplayContributorSummary[]; source: string | null; total_states: number | null }>(
       `/replay/contributors${query({ limit, run_id: runId })}`,

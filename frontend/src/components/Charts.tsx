@@ -168,6 +168,118 @@ export function ActivityChart({
   );
 }
 
+export function AnomalyScoreChart({
+  data,
+  threshold,
+  height = 260,
+  alerts = [],
+}: {
+  data: Array<{
+    index: number;
+    step: number;
+    timestamp?: string | null;
+    anomaly_score: number;
+    flagged: boolean;
+    alert_id?: string | null;
+  }>;
+  threshold: number | null;
+  height?: number;
+  alerts?: string[];
+}) {
+  const shaped = data.map((point) => ({
+    index: point.step,
+    score: point.anomaly_score,
+    flaggedScore: point.flagged ? point.anomaly_score : null,
+    alertScore: point.alert_id && alerts.includes(point.alert_id) ? point.anomaly_score : null,
+    timestamp: point.timestamp,
+  }));
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <ComposedChart data={shaped} margin={{ top: 8, right: 10, bottom: 0, left: -12 }}>
+        <defs>
+          <linearGradient id="anomalyFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={SERIES_COLOURS.residual} stopOpacity={0.28} />
+            <stop offset="100%" stopColor={SERIES_COLOURS.residual} stopOpacity={0.02} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid {...GRID} vertical={false} />
+        <XAxis dataKey="index" {...AXIS} />
+        <YAxis {...AXIS} width={52} domain={["auto", "auto"]} />
+        <Tooltip content={<TooltipBox labelPrefix="Step" />} />
+        <Legend wrapperStyle={LEGEND} />
+        <Area
+          type="monotone"
+          dataKey="score"
+          name="Anomaly score (mean |residual|)"
+          stroke={SERIES_COLOURS.residual}
+          strokeWidth={1.6}
+          fill="url(#anomalyFill)"
+          dot={false}
+          isAnimationActive={false}
+        />
+        <Line
+          type="monotone"
+          dataKey="flaggedScore"
+          name="Flagged state"
+          legendType="none"
+          stroke="transparent"
+          dot={{ r: 3, fill: SERIES_COLOURS.critical, stroke: SERIES_COLOURS.critical }}
+          isAnimationActive={false}
+        />
+        <Line
+          type="monotone"
+          dataKey="alertScore"
+          name="Persisted alert"
+          legendType="none"
+          stroke="transparent"
+          dot={{ r: 5, fill: SERIES_COLOURS.actual, stroke: "#FFFFFF", strokeWidth: 1 }}
+          isAnimationActive={false}
+        />
+        {typeof threshold === "number" ? (
+          <ReferenceLine
+            y={threshold}
+            stroke={SERIES_COLOURS.critical}
+            strokeDasharray="5 4"
+            label={{
+              value: `Threshold ${threshold.toFixed(3)}`,
+              position: "insideTopRight",
+              fill: SERIES_COLOURS.critical,
+              fontSize: 10,
+            }}
+          />
+        ) : null}
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}
+
+/** Persisted playback alerts per day. */
+export function AlertTrendChart({
+  data,
+  height = 180,
+}: {
+  data: Array<{ day: string; count: number }>;
+  height?: number;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -18 }}>
+        <CartesianGrid {...GRID} vertical={false} />
+        <XAxis dataKey="day" {...AXIS} />
+        <YAxis {...AXIS} width={46} allowDecimals={false} />
+        <Tooltip content={<TooltipBox labelPrefix="Day" />} />
+        <Bar
+          dataKey="count"
+          name="Alerts"
+          fill={SERIES_COLOURS.critical}
+          radius={[2, 2, 0, 0]}
+          isAnimationActive={false}
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
 export function CompareChart({
   data,
   height = 260,

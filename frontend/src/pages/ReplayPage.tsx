@@ -2,11 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { api } from "../api/client";
-import type { ReplayFeatureRow } from "../api/types";
+import type { PlaybackAlert, PlaybackEvaluation, ReplayFeatureRow } from "../api/types";
 import { PlaybackChart, ThresholdTrendChart } from "../components/Charts";
 import { DataTable, type Column } from "../components/DataTable";
 import { PageHeader, Panel } from "../components/Panel";
+import { PlaybackAlertDrawer, PlaybackAlertList, SeverityPill } from "../components/PlaybackAlert";
 import { Pill, PriorityPill } from "../components/Status";
+import { useToast } from "../components/Toast";
 import {
   AvailabilityNotice,
   EmptyState,
@@ -22,6 +24,7 @@ const WINDOW = 30;
 const SPEEDS = [1, 2, 4, 8];
 
 export function ReplayPage() {
+  const toast = useToast();
   const [params] = useSearchParams();
   const initialStep = Math.max(1, Number(params.get("step")) || 1);
   const [step, setStep] = useState(initialStep);
@@ -30,6 +33,12 @@ export function ReplayPage() {
   const [feature, setFeature] = useState("");
   const [loadAll, setLoadAll] = useState(false);
   const [tableQuery, setTableQuery] = useState("");
+  const [evaluation, setEvaluation] = useState<PlaybackEvaluation | null>(null);
+  const [evaluateError, setEvaluateError] = useState<string | null>(null);
+  const [evaluating, setEvaluating] = useState(false);
+  const [sessionAlerts, setSessionAlerts] = useState<PlaybackAlert[]>([]);
+  const [selectedAlert, setSelectedAlert] = useState<string | null>(null);
+  const seenAlerts = useRef<Set<string>>(new Set());
   const lastKey = useRef<string>("");
 
   const meta = useApi(() => api.replayMeta(), "replay-meta");
@@ -61,6 +70,59 @@ export function ReplayPage() {
     `replay-local-${step}-${activeFeature}`,
   );
   const contributors = useApi(() => api.replayContributors(12), "replay-contributors");
+  const persistedAlerts = useApi(
+    () => api.playbackAlerts({ run_id: meta.data?.run_id, limit: 500 }),
+    `replay-alerts-${meta.data?.run_id ?? "pending"}`,
+  );
+
+  // One debounced evaluation per settled playback position. The backend is
+  // idempotent, so pausing, seeking and replaying cannot duplicate an alert.
+  useEffect(() => {
+    if (!meta.data?.availability.available) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      setEvaluating(true);
+      api
+        .evaluatePlayback(step, meta.data?.run_id)
+        .then((result) => {
+          if (cancelled) return;
+          setEvaluation(result);
+          setEvaluateError(null);
+          const alert = result.alert;
+          if (alert) {
+            if (!seenAlerts.current.has(alert.alert_id)) {
+              seenAlerts.current.add(alert.alert_id);
+              setSessionAlerts((current) =>
+                [alert, ...current.filter((entry) => entry.alert_id !== alert.alert_id)].slice(
+                  0,
+                  50,
+                ),
+              );
+              if (!result.deduplicated) {
+                persistedAlerts.reload();
+                toast.push({
+                  title: `${alert.severity.toUpperCase()} playback alert · step ${alert.target_step}`,
+                  message: `Anomaly score ${alert.anomaly_score.toFixed(3)} at ${timestamp(alert.timestamp)}. Review signal only.`,
+                  tone: alert.severity === "critical" ? "error" : "info",
+                });
+              }
+            }
+          }
+        })
+        .catch((cause: unknown) => {
+          if (cancelled) return;
+          setEvaluateError(cause instanceof Error ? cause.message : "Evaluation failed");
+        })
+        .finally(() => {
+          if (!cancelled) setEvaluating(false);
+        });
+    }, 180);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, meta.data?.run_id, meta.data?.availability.available]);
 
   useEffect(() => {
     if (!playing) return;
@@ -116,6 +178,13 @@ export function ReplayPage() {
       })),
     [local.data],
   );
+
+  const markerAlerts = useMemo(() => {
+    const map = new Map<number, PlaybackAlert>();
+    (persistedAlerts.data?.alerts ?? []).forEach((alert) => map.set(alert.target_step, alert));
+    sessionAlerts.forEach((alert) => map.set(alert.target_step, alert));
+    return [...map.values()].sort((left, right) => left.target_step - right.target_step);
+  }, [persistedAlerts.data, sessionAlerts]);
 
   const tableRows = useMemo(() => {
     const rows = stateData.data?.feature_table ?? [];
@@ -266,6 +335,22 @@ export function ReplayPage() {
 
               <div className="progress-track" role="progressbar" aria-valuemin={minStep} aria-valuemax={maxStep} aria-valuenow={step}>
                 <div className="progress-fill" style={{ width: `${progress}%` }} />
+                {markerAlerts.map((alert) => (
+                  <button
+                    key={alert.alert_id}
+                    type="button"
+                    className={`timeline-marker ${alert.severity}`}
+                    style={{
+                      left: `${maxStep > minStep ? ((alert.target_step - minStep) / (maxStep - minStep)) * 100 : 0}%`,
+                    }}
+                    title={`${alert.severity} alert · step ${alert.target_step} · score ${alert.anomaly_score.toFixed(3)}`}
+                    aria-label={`Alert at step ${alert.target_step}`}
+                    onClick={() => {
+                      setPlaying(false);
+                      setStep(alert.target_step);
+                    }}
+                  />
+                ))}
               </div>
               <div className="transport-meta">
                 <span>{number(step)} / {number(maxStep)} states</span>
@@ -273,6 +358,124 @@ export function ReplayPage() {
               </div>
             </div>
           </Panel>
+
+          <Panel
+            title="Prediction alerting"
+            hint="Each settled playback position is scored against the LSTM forecast and the calibrated rule set."
+            actions={
+              <span className="small muted">
+                {evaluating
+                  ? "Evaluating…"
+                  : evaluation
+                    ? `${evaluation.prediction.source.replace(/_/g, " ")} · ${evaluation.context.states_used}-state window`
+                    : "Awaiting evaluation"}
+              </span>
+            }
+          >
+            {evaluateError ? (
+              <div className="notice warning">
+                <span className="notice-icon">!</span>
+                <div>
+                  <strong>Playback evaluation failed</strong>
+                  <div>{evaluateError}</div>
+                </div>
+              </div>
+            ) : null}
+            {evaluation ? (
+              <>
+                {evaluation.alert ? (
+                  <div className={`notice ${evaluation.alert.severity === "critical" ? "danger" : "warning"}`}>
+                    <span className="notice-icon">◉</span>
+                    <div style={{ flex: 1 }}>
+                      <strong>
+                        {evaluation.alert.severity.toUpperCase()} alert at step{" "}
+                        {evaluation.alert.target_step} · {timestamp(evaluation.alert.timestamp)}
+                      </strong>
+                      <div>
+                        Anomaly score {decimal(evaluation.alert.anomaly_score, 4)} against threshold{" "}
+                        {decimal(evaluation.alert.threshold, 4)}. {evaluation.alert.trigger_reason}.
+                        {evaluation.deduplicated
+                          ? " This alert was generated earlier; it was not created again."
+                          : " New alert persisted."}
+                      </div>
+                      <div className="inline" style={{ marginTop: 8 }}>
+                        <SeverityPill severity={evaluation.alert.severity} />
+                        <button
+                          type="button"
+                          className="btn small"
+                          onClick={() => setSelectedAlert(evaluation.alert!.alert_id)}
+                        >
+                          Open alert details
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="notice info">
+                    <span className="notice-icon">i</span>
+                    <div>
+                      <strong>No alert at step {evaluation.state.step}</strong>
+                      <div>
+                        Anomaly score {decimal(evaluation.score.anomaly_score, 4)} is below the threshold{" "}
+                        {decimal(evaluation.state.threshold, 4)}; {evaluation.conditions.reasons.join(" ")}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="small muted" style={{ marginTop: 8 }}>
+                  Rules: single state ≥ threshold, or {evaluation.conditions.rules.persistence_window}{" "}
+                  consecutive states ≥{" "}
+                  {evaluation.conditions.elevated_threshold
+                    ? decimal(evaluation.conditions.elevated_threshold, 4)
+                    : "80% of threshold"}{" "}
+                  within one segment. Scores are mean absolute residuals in standardized model
+                  feature space; dataset labels are never used to alert. Anomalies are review
+                  signals, not attack confirmations.
+                </div>
+              </>
+            ) : null}
+
+            <div style={{ marginTop: 14 }}>
+              <div className="inline" style={{ justifyContent: "space-between" }}>
+                <span className="section-label">Session alert history</span>
+                <span className="small muted">
+                  {sessionAlerts.length} this session · {markerAlerts.length} persisted on the timeline
+                </span>
+              </div>
+              <PlaybackAlertList
+                alerts={sessionAlerts}
+                onOpen={(alert) => setSelectedAlert(alert.alert_id)}
+                emptyMessage="No alert generated in this playback session yet"
+              />
+            </div>
+          </Panel>
+
+          <div className="grid two">
+            <div className="metric-card">
+              <span className="metric-label">Anomaly score</span>
+              <span className="metric-value">
+                {evaluation ? decimal(evaluation.score.anomaly_score, 4) : decimal(state?.residual, 4)}
+              </span>
+              <span className="metric-detail">
+                Mean absolute residual vs threshold {decimal(evaluation?.state.threshold ?? state?.threshold, 4)}
+              </span>
+            </div>
+            <div className={`metric-card ${evaluation?.alert ? "status-critical" : "status-good"}`}>
+              <span className="metric-label">Alert status</span>
+              <span className="metric-value small-value">
+                {evaluation?.alert
+                  ? `${evaluation.alert.severity} · ${evaluation.alert.status}`
+                  : evaluation
+                    ? "no alert"
+                    : "evaluating"}
+              </span>
+              <span className="metric-detail">
+                {evaluation?.alert
+                  ? evaluation.alert.trigger_reason
+                  : "Calibrated threshold and persistence rules"}
+              </span>
+            </div>
+          </div>
 
           <div className="grid four state-kpis">
             <div className="metric-card">
@@ -483,6 +686,15 @@ export function ReplayPage() {
               <EmptyState title="Contributor summary unavailable." />
             )}
           </Panel>
+
+          {selectedAlert ? (
+            <PlaybackAlertDrawer
+              alertId={selectedAlert}
+              initial={markerAlerts.find((alert) => alert.alert_id === selectedAlert) ?? null}
+              onClose={() => setSelectedAlert(null)}
+              onChanged={() => persistedAlerts.reload()}
+            />
+          ) : null}
 
           <Panel title="Sources and interpretation limits">
             <SourceLine source={meta.data.source} />

@@ -49,6 +49,45 @@ CREATE TABLE IF NOT EXISTS audit_log (
     detail TEXT,
     created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS playback_alert (
+    alert_id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL,
+    dataset_id TEXT NOT NULL,
+    model_version TEXT NOT NULL,
+    target_step INTEGER NOT NULL,
+    target_index INTEGER NOT NULL,
+    timestamp TEXT,
+    segment_id TEXT,
+    dataset_label TEXT,
+    capture_day TEXT,
+    anomaly_score REAL NOT NULL,
+    threshold REAL,
+    ratio REAL,
+    severity TEXT NOT NULL,
+    trigger_reason TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new',
+    assignee TEXT,
+    notes TEXT,
+    features_json TEXT NOT NULL,
+    prediction_source TEXT NOT NULL,
+    predicted_ref TEXT,
+    actual_ref TEXT,
+    context_ref TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    UNIQUE (run_id, model_version, dataset_id, target_step)
+);
+CREATE INDEX IF NOT EXISTS idx_playback_alert_run
+    ON playback_alert (run_id, target_step);
+CREATE TABLE IF NOT EXISTS playback_alert_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    alert_id TEXT NOT NULL,
+    actor TEXT NOT NULL,
+    action TEXT NOT NULL,
+    from_value TEXT,
+    to_value TEXT,
+    created_at TEXT NOT NULL
+);
 """
 
 
@@ -186,3 +225,178 @@ class Database:
             "ORDER BY id DESC LIMIT ?",
             (limit,),
         )
+
+    # ---------------------------------------------------------- playback alerts
+
+    def insert_playback_alert(self, values: dict[str, Any]) -> tuple[dict[str, Any], bool]:
+        """Insert idempotently; return the stored row and whether it was created."""
+        columns = (
+            "alert_id",
+            "run_id",
+            "dataset_id",
+            "model_version",
+            "target_step",
+            "target_index",
+            "timestamp",
+            "segment_id",
+            "dataset_label",
+            "capture_day",
+            "anomaly_score",
+            "threshold",
+            "ratio",
+            "severity",
+            "trigger_reason",
+            "status",
+            "assignee",
+            "notes",
+            "features_json",
+            "prediction_source",
+            "predicted_ref",
+            "actual_ref",
+            "context_ref",
+            "created_at",
+            "updated_at",
+        )
+        placeholders = ", ".join("?" for _ in columns)
+        with self._lock:
+            cursor = self._connection.execute(
+                f"INSERT OR IGNORE INTO playback_alert ({', '.join(columns)}) "
+                f"VALUES ({placeholders})",
+                tuple(values[column] for column in columns),
+            )
+            created = cursor.rowcount > 0
+        row = self.query(
+            "SELECT * FROM playback_alert WHERE alert_id = ?", (values["alert_id"],)
+        )
+        if not row:
+            row = self.query(
+                "SELECT * FROM playback_alert WHERE run_id = ? AND model_version = ? "
+                "AND dataset_id = ? AND target_step = ?",
+                (
+                    values["run_id"],
+                    values["model_version"],
+                    values["dataset_id"],
+                    values["target_step"],
+                ),
+            )
+        return row[0], created
+
+    def playback_alerts(
+        self,
+        run_id: str | None = None,
+        status: str | None = None,
+        severity: str | None = None,
+        dataset_id: str | None = None,
+        target_step: int | None = None,
+        since: str | None = None,
+        until: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[dict[str, Any]]:
+        clauses = []
+        params: list[Any] = []
+        if run_id:
+            clauses.append("run_id = ?")
+            params.append(run_id)
+        if status:
+            clauses.append("status = ?")
+            params.append(status)
+        if severity:
+            clauses.append("severity = ?")
+            params.append(severity)
+        if dataset_id:
+            clauses.append("dataset_id = ?")
+            params.append(dataset_id)
+        if target_step is not None:
+            clauses.append("target_step = ?")
+            params.append(int(target_step))
+        if since:
+            clauses.append("COALESCE(timestamp, created_at) >= ?")
+            params.append(since)
+        if until:
+            clauses.append("COALESCE(timestamp, created_at) <= ?")
+            params.append(until)
+        where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+        params.extend([max(1, min(int(limit), 500)), max(0, int(offset))])
+        return self.query(
+            f"SELECT * FROM playback_alert {where} ORDER BY target_step ASC, created_at ASC "
+            "LIMIT ? OFFSET ?",
+            tuple(params),
+        )
+
+    def playback_alert(self, alert_id: str) -> dict[str, Any] | None:
+        rows = self.query("SELECT * FROM playback_alert WHERE alert_id = ?", (alert_id,))
+        return rows[0] if rows else None
+
+    def playback_alerts_for_run(self, run_id: str) -> list[dict[str, Any]]:
+        return self.query(
+            "SELECT * FROM playback_alert WHERE run_id = ? ORDER BY target_step ASC",
+            (run_id,),
+        )
+
+    def count_playback_alerts(self, run_id: str) -> int:
+        rows = self.query(
+            "SELECT COUNT(*) AS total FROM playback_alert WHERE run_id = ?", (run_id,)
+        )
+        return int(rows[0]["total"]) if rows else 0
+
+    def update_playback_alert(
+        self,
+        alert_id: str,
+        status: str,
+        assignee: str | None,
+        notes: str | None,
+        actor: str,
+        changes: list[tuple[str, str | None, str | None]],
+    ) -> dict[str, Any] | None:
+        timestamp = utc_now()
+        with self._lock:
+            self._connection.execute(
+                "UPDATE playback_alert SET status = ?, assignee = ?, notes = ?, "
+                "updated_at = ? WHERE alert_id = ?",
+                (status, assignee, notes, timestamp, alert_id),
+            )
+            for field, before, after in changes:
+                self._connection.execute(
+                    "INSERT INTO playback_alert_history "
+                    "(alert_id, actor, action, from_value, to_value, created_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    (alert_id, actor, field, before, after, timestamp),
+                )
+            self._connection.execute(
+                "INSERT INTO audit_log (actor, action, detail, created_at) VALUES (?, ?, ?, ?)",
+                (actor, "playback_alert_update", alert_id, timestamp),
+            )
+        return self.playback_alert(alert_id)
+
+    def playback_alert_history(self, alert_id: str) -> list[dict[str, Any]]:
+        return self.query(
+            "SELECT actor, action, from_value, to_value, created_at "
+            "FROM playback_alert_history WHERE alert_id = ? ORDER BY id ASC",
+            (alert_id,),
+        )
+
+    def playback_alert_status_counts(self, run_id: str) -> dict[str, int]:
+        rows = self.query(
+            "SELECT status, COUNT(*) AS total FROM playback_alert WHERE run_id = ? "
+            "GROUP BY status",
+            (run_id,),
+        )
+        return {row["status"]: int(row["total"]) for row in rows}
+
+    def playback_alert_severity_counts(self, run_id: str) -> dict[str, int]:
+        rows = self.query(
+            "SELECT severity, COUNT(*) AS total FROM playback_alert WHERE run_id = ? "
+            "GROUP BY severity",
+            (run_id,),
+        )
+        return {row["severity"]: int(row["total"]) for row in rows}
+
+    def playback_alert_daily_counts(self, run_id: str) -> list[dict[str, Any]]:
+        rows = self.query(
+            "SELECT substr(COALESCE(timestamp, created_at), 1, 10) AS day, "
+            "COUNT(*) AS total FROM playback_alert WHERE run_id = ? "
+            "GROUP BY day ORDER BY day ASC",
+            (run_id,),
+        )
+        return [{"day": row["day"], "count": int(row["total"])} for row in rows]

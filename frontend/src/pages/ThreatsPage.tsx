@@ -1,11 +1,12 @@
 import { useState } from "react";
 
 import { api } from "../api/client";
-import type { EventStatus, SecurityEvent } from "../api/types";
+import type { EventStatus, PlaybackAlert, SecurityEvent } from "../api/types";
 import { DataTable, type Column } from "../components/DataTable";
 import { FilterBar, SearchInput, SelectField, Toggle } from "../components/Filters";
 import { Drawer } from "../components/Overlay";
 import { PageHeader, Panel } from "../components/Panel";
+import { PlaybackAlertDrawer, PlaybackAlertList } from "../components/PlaybackAlert";
 import { CaseStatusPill, Pill, PriorityPill } from "../components/Status";
 import {
   AvailabilityNotice,
@@ -29,6 +30,12 @@ export function ThreatsPage() {
   const [includeTop, setIncludeTop] = useState(false);
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedAlert, setSelectedAlert] = useState<PlaybackAlert | null>(null);
+
+  const playbackAlerts = useApi(
+    () => api.playbackAlerts({ limit: 200 }),
+    "threat-playback-alerts",
+  );
 
   const listing = useApi(
     () =>
@@ -131,6 +138,27 @@ export function ThreatsPage() {
       />
 
       <AvailabilityNotice availability={data.availability} title="Review queue unavailable" />
+
+      <Panel
+        title="Generated playback alerts"
+        hint="Persisted automatically when a playback state crossed the calibrated residual alert rules. Each alert is a review signal, not a confirmed incident."
+        actions={
+          <button type="button" className="btn small" onClick={playbackAlerts.reload}>
+            Refresh alerts
+          </button>
+        }
+        flush
+      >
+        {playbackAlerts.error ? (
+          <ErrorState message={playbackAlerts.error} onRetry={playbackAlerts.reload} />
+        ) : (
+          <PlaybackAlertList
+            alerts={playbackAlerts.data?.alerts ?? []}
+            onOpen={(alert) => setSelectedAlert(alert)}
+            emptyMessage="No playback alert has been generated"
+          />
+        )}
+      </Panel>
 
       <div className="notice warning">
         <span className="notice-icon">!</span>
@@ -277,6 +305,15 @@ export function ThreatsPage() {
       <Panel title="Interpretation limits">
         <Limitations items={data.limitations} />
       </Panel>
+
+      {selectedAlert ? (
+        <PlaybackAlertDrawer
+          alertId={selectedAlert.alert_id}
+          initial={selectedAlert}
+          onClose={() => setSelectedAlert(null)}
+          onChanged={() => playbackAlerts.reload()}
+        />
+      ) : null}
 
       {selected ? (
         <EventDrawer

@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import Settings
 from .db import Database
-from .routers import admin, dashboard, intel, registry, system
+from .routers import admin, alerts, dashboard, intel, registry, system
 from .services.artifacts import ArtifactError, ArtifactStore
 from .services.settings_store import SettingsStore
 from .services.system import VERSION
@@ -94,7 +94,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             content={"error": "not_found", "detail": str(exc)},
         )
 
-    for router in (system.router, dashboard.router, intel.router, registry.router, admin.router):
+    for router in (
+        system.router,
+        dashboard.router,
+        intel.router,
+        alerts.router,
+        registry.router,
+        admin.router,
+    ):
         app.include_router(router, prefix="/api")
 
     dist = settings.root / "frontend" / "dist"

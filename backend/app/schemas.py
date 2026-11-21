@@ -405,6 +405,22 @@ class EventUpdateRequest(BaseModel):
     actor: str = Field(default="analyst", min_length=1, max_length=120)
 
 
+class PlaybackEvaluateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    step: int = Field(ge=1, description="Replay step (1-based) whose next state is evaluated")
+    run_id: str | None = None
+
+
+class PlaybackAlertUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: EventStatus | None = None
+    assignee: str | None = Field(default=None, max_length=120)
+    notes: str | None = Field(default=None, max_length=4000)
+    actor: str = Field(default="analyst", min_length=1, max_length=120)
+
+
 class EventDetailResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -465,6 +481,7 @@ class DashboardResponse(BaseModel):
     system_health: dict[str, Any]
     recent_events: list[SecurityEvent]
     event_summary: dict[str, Any]
+    alerts: dict[str, Any]
     limitations: list[str]
 
 
