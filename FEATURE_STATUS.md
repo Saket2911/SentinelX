@@ -10,11 +10,14 @@ checkout · **Planned** = not implemented and not claimed.
 | --- | --- | --- |
 | SOC dashboard | Implemented | Posture, metrics, residual activity, model health, dataset readiness, recent candidates, limits |
 | Network monitoring | Conditional | State-plane metrics with a replay table; protocol/port panel needs the raw flow CSV |
+| Network state playback | Conditional | Play/pause/reset, first/previous/next/last, timeline slider, speed, step and timestamp, per-state contributors and full 209-feature table; needs `replay_arrays.npz` + `sentinelx_test_sequences_v3.npy` |
+| Feature explorer | Conditional | Feature picker, actual vs predicted, signed/absolute residuals, largest errors, contributor ranking; needs the replay arrays |
 | Predictive intelligence | Implemented | Recorded metrics, multi-step table, calibration; actual-vs-predicted needs the replay table |
 | Threat triage | Conditional | Threshold candidates need a replay/triage CSV; empty state explains the frozen-threshold recall caveat |
 | Analyst workflow | Implemented | Status, assignee, notes, append-only history in SQLite |
 | Attack timeline | Conditional | Label phases and 5-min residual buckets from the replay table |
 | Explainability centre | Conditional | Method/global/temporal need SHAP summary + CSVs; local view needs `shap_values.npz` |
+| Original Streamlit parity | Implemented | Every original page maps to a console page: Overview→SOC Dashboard, Historical Replay→Network State Playback, Threat Triage→Threat Triage, Feature Explorer→Feature Explorer, SHAP→Explainability, Model & Dataset→Models/Datasets |
 | Model management | Implemented | Registry, integrity checks, comparison, guarded activation; activation requires a checkpoint |
 | Dataset management | Implemented | Artifact checklist, label coverage, upload + validation against the feature contract |
 | Reports | Implemented | Markdown + JSON generation, preview, download |

@@ -2,34 +2,36 @@
   color-scheme: dark;
 
   /* Surfaces */
-  --bg: #080b11;
-  --bg-elevated: #0c111a;
-  --surface: #0f1622;
-  --surface-raised: #131c2a;
-  --surface-hover: #182334;
-  --border: #1d2938;
-  --border-strong: #2a3a4e;
+  --bg: #090e18;
+  --bg-elevated: #0d1421;
+  --surface: #111b2a;
+  --surface-raised: #172235;
+  --surface-hover: #1c2a40;
+  --border: #253249;
+  --border-strong: #33445f;
 
   /* Text */
-  --text: #e8eef7;
-  --text-secondary: #a8b7ca;
-  --text-muted: #7285a0;
-  --text-inverse: #06121a;
+  --text: #e6edf7;
+  --text-secondary: #91a0b7;
+  --text-muted: #65748b;
+  --text-inverse: #06101f;
 
-  /* Accents */
-  --accent: #3ed3b6;
-  --accent-strong: #27b39a;
-  --accent-soft: rgba(62, 211, 182, 0.12);
-  --accent-line: rgba(62, 211, 182, 0.35);
-  --info: #5aa9f0;
-  --info-soft: rgba(90, 169, 240, 0.12);
-  --ok: #4ecb8d;
-  --ok-soft: rgba(78, 203, 141, 0.12);
-  --warn: #e6b45c;
-  --warn-soft: rgba(230, 180, 92, 0.12);
-  --danger: #f2646c;
-  --danger-soft: rgba(242, 100, 108, 0.12);
-  --neutral-soft: rgba(168, 183, 202, 0.1);
+  /* Accents (meaning stays fixed across the app) */
+  --accent: #3b82f6;
+  --accent-strong: #2563eb;
+  --accent-soft: rgba(59, 130, 246, 0.14);
+  --accent-line: rgba(59, 130, 246, 0.42);
+  --info: #22d3ee;
+  --info-soft: rgba(34, 211, 238, 0.12);
+  --ok: #22c55e;
+  --ok-soft: rgba(34, 197, 94, 0.12);
+  --warn: #f59e0b;
+  --warn-soft: rgba(245, 158, 11, 0.12);
+  --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  --purple: #a78bfa;
+  --purple-soft: rgba(167, 139, 250, 0.12);
+  --neutral-soft: rgba(145, 160, 183, 0.1);
 
   /* Type */
   --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -39,7 +41,7 @@
   --radius-sm: 4px;
   --radius: 6px;
   --radius-lg: 10px;
-  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 8px 24px rgba(0, 0, 0, 0.25);
-  --sidebar-width: 248px;
+  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 10px 28px rgba(0, 0, 0, 0.28);
+  --sidebar-width: 252px;
   --topbar-height: 58px;
 }

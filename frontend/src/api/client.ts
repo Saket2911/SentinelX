@@ -13,6 +13,10 @@ import type {
   NetworkOverview,
   PredictionSeries,
   PredictionSummary,
+  ReplayContributorSummary,
+  ReplayMeta,
+  ReplaySeries,
+  ReplayState,
   ReportSummary,
   SettingsResponse,
   Timeline,
@@ -128,6 +132,27 @@ export const api = {
   explainability: (
     params: { label?: string; output?: string; sample_index?: number; top_n?: number; run_id?: string } = {},
   ) => request<Explainability>(`/explainability${query(params)}`),
+
+  replayMeta: (runId?: string) => request<ReplayMeta>(`/replay/meta${query({ run_id: runId })}`),
+  replayState: (
+    params: { step: number; features?: string[]; contributor_limit?: number; include_all?: boolean; run_id?: string },
+  ) =>
+    request<ReplayState>(
+      `/replay/state${query({
+        step: params.step,
+        features: params.features?.length ? params.features.join(",") : undefined,
+        contributor_limit: params.contributor_limit,
+        include_all: params.include_all,
+        run_id: params.run_id,
+      })}`,
+    ),
+  replaySeries: (
+    params: { feature?: string; start?: number; limit?: number; run_id?: string } = {},
+  ) => request<ReplaySeries>(`/replay/series${query(params)}`),
+  replayContributors: (limit = 15, runId?: string) =>
+    request<{ run_id: string; contributors: ReplayContributorSummary[]; source: string | null; total_states: number | null }>(
+      `/replay/contributors${query({ limit, run_id: runId })}`,
+    ),
 
   models: () =>
     request<{

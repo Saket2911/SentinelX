@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
@@ -162,6 +163,38 @@ def workspace(tmp_path: Path) -> Settings:
     triage_dir = run / "explainable_triage_v2"
     triage_dir.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(rows).to_csv(triage_dir / "explainable_triage.csv", index=False)
+
+    # Per-state replay arrays: the ten input states, the observed next state and the
+    # model's forecast. Synthetic fixtures; never served by a deployment.
+    feature_names = ["Flow Count"] + [f"feature_{i}" for i in range(1, 208)] + ["ACK Flag Cnt__mean"]
+    actual = np.zeros((30, len(feature_names)), dtype=np.float64)
+    predicted = np.zeros((30, len(feature_names)), dtype=np.float64)
+    for index in range(30):
+        actual[index, 0] = 10.0 + index
+        predicted[index, 0] = 9.5 + index
+        actual[index, 1:-1] = np.linspace(0.0, 1.0, 207) + index * 0.01
+        predicted[index, 1:-1] = np.linspace(0.0, 0.9, 207) + index * 0.01
+        actual[index, -1] = 0.5 + index * 0.001
+        predicted[index, -1] = 0.45 + index * 0.001
+    sequences = np.repeat(actual[:, None, :], 10, axis=1).astype(np.float32)
+    replay_dir = run / "historical_replay_v1"
+    replay_dir.mkdir(parents=True, exist_ok=True)
+    np.savez(
+        replay_dir / "replay_arrays.npz",
+        predictions=predicted,
+        actual=actual,
+        feature_names=np.array(feature_names),
+    )
+    np.save(datasets / "sentinelx_test_sequences_v3.npy", sequences)
+    _write_json(
+        replay_dir / "replay_manifest.json",
+        {
+            "input_features": len(feature_names),
+            "sequence_length": 10,
+            "checkpoint_epoch": 11,
+            "replay_observations": 30,
+        },
+    )
 
     importance_rows = []
     for label in ("Benign", "Bot"):

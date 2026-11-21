@@ -102,7 +102,31 @@ synthetic, never served by a deployment) so the row-level paths are exercised:
    an unsupported `Line` child inside `AreaChart` (now `ComposedChart`), unused
    imports failing strict TypeScript, and missing Node types for `vite.config.ts`.
 
-## 5. Reproduction
+## 5. UI/UX upgrade and restored replay capability
+
+Scope: improve the console without removing pages, charts or workflows, and
+restore the original Streamlit application's network-state playback and feature
+explorer in the console.
+
+| Item | Evidence |
+| --- | --- |
+| Per-state replay API | `GET /api/replay/meta`, `/state`, `/series`, `/contributors` serve `replay_arrays.npz` + `sentinelx_test_sequences_v3.npy` with availability blocks when absent |
+| Playback page | `/replay`: play/pause, first/previous/next/last, reset, timeline slider, speed 1–8×, step counter, timestamp, segment, capture day, reference label, residual and threshold; charts update per state |
+| Feature explorer | `/explorer`: feature picker, window navigation, MAE/median/max cards, actual-vs-predicted, signed/absolute residuals, scatter, largest-error table linking into playback, contributor ranking |
+| Design system | Tokens re-based on the specified navy/charcoal palette; grouped sidebar, compact header with dataset mode, active model, review-candidate count and API health |
+| Preserved pages | Dashboard, Network, Predictions, Threats, Timeline, Explainability, Models, Datasets, Reports, Settings all remain routed and unchanged in capability |
+| Backend tests | `cd backend && ../.venv/bin/python -m pytest` → **35 passed** (8 new playback tests) |
+| Frontend | `npx tsc --noEmit` clean; `npm run build` succeeds; `/`, `/replay`, `/explorer`, `/network`, `/predictions` return 200 through the preview host |
+
+Playback could not be exercised with real values in this checkout: the arrays and
+frozen test sequences are git-ignored and absent. The API returns
+`availability.available = false` with the exact required artifact paths, and the
+page states that nothing is simulated. Regenerate with
+`python scripts/evaluation/29_generate_historical_replay_v3.py` where the
+checkpoint and dataset exist. The browser was not opened for interaction or
+visual review of the upgraded pages; only the build and HTTP routes were checked.
+
+## 6. Reproduction
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r backend/requirements-dev.txt

@@ -33,6 +33,10 @@ LSTM World Model  P(S(t+1) | S(t), S(t-1), … S(t-9))
                     │
                     ▼
 SentinelX API (FastAPI)  →  SOC console (React + TypeScript)
+                              ├── SOC dashboard, network monitoring
+                              ├── network-state playback (play/pause/step/slider)
+                              ├── feature explorer, prediction analysis, explainability
+                              └── threat triage, timeline, models, datasets, reports
                     │
                     └── analyst workflow: status, assignee, notes, audit trail
 ```
@@ -136,6 +140,7 @@ All analytical responses carry `source` (where the bytes came from),
 | System | `GET /api/health`, `/api/capabilities`, `/api/system/status`, `/api/runs`, `/api/audit` |
 | Dashboard | `GET /api/dashboard` |
 | Network | `GET /api/network` |
+| Replay | `GET /api/replay/meta`, `/api/replay/state?step=`, `/api/replay/series?feature=`, `/api/replay/contributors` |
 | Predictions | `GET /api/predictions/summary`, `/api/predictions/series`, `/api/predictions/top-residuals` |
 | Triage | `GET /api/events`, `GET/PATCH /api/events/{id}`, `GET /api/timeline` |
 | Explainability | `GET /api/explainability?label=&output=&sample_index=` |

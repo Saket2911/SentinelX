@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
+
 from .. import schemas
 from ..deps import active_run, get_database, get_store, require_write_access
 from ..services import events as events_service
 from ..services import explainability as explainability_service
 from ..services import network as network_service
+from ..services import playback as playback_service
 from ..services import predictions as predictions_service
 from ..services.artifacts import ArtifactStore
 from ..schemas import EventStatus
@@ -185,3 +187,51 @@ def explainability(
         sample_index=sample_index,
         top_n=top_n,
     )
+
+
+@router.get("/replay/meta", summary="Historical replay timeline, features and segments")
+def replay_meta(request: Request, run_id: str | None = None, store: ArtifactStore = Depends(get_store)) -> dict:
+    return playback_service.meta(store, _run(request, run_id, store))
+
+
+@router.get("/replay/state", summary="Observed, predicted and historical values for one replay state")
+def replay_state(
+    request: Request,
+    step: int = Query(ge=1, description="Replay step (1-based, as recorded in the replay table)"),
+    features: str | None = Query(default=None, description="Comma-separated model feature names"),
+    contributor_limit: int = Query(default=8, ge=1, le=20),
+    include_all: bool = False,
+    run_id: str | None = None,
+    store: ArtifactStore = Depends(get_store),
+) -> dict:
+    names = [name.strip() for name in (features or "").split(",") if name.strip()]
+    return playback_service.state(
+        store,
+        _run(request, run_id, store),
+        step,
+        features=names,
+        contributor_limit=contributor_limit,
+        include_all=include_all,
+    )
+
+
+@router.get("/replay/series", summary="Actual versus predicted values for one feature across replay states")
+def replay_series(
+    request: Request,
+    feature: str | None = None,
+    start: int = Query(default=0, ge=0),
+    limit: int = Query(default=160, ge=1, le=2000),
+    run_id: str | None = None,
+    store: ArtifactStore = Depends(get_store),
+) -> dict:
+    return playback_service.series(store, _run(request, run_id, store), feature, start, limit)
+
+
+@router.get("/replay/contributors", summary="Most frequent residual contributors across the replay")
+def replay_contributors(
+    request: Request,
+    limit: int = Query(default=15, ge=1, le=50),
+    run_id: str | None = None,
+    store: ArtifactStore = Depends(get_store),
+) -> dict:
+    return playback_service.contributors(store, _run(request, run_id, store), limit)

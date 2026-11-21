@@ -506,6 +506,129 @@ export interface SettingsResponse {
   editable_keys: string[];
 }
 
+export interface ReplaySegment {
+  segment_id: string;
+  first_step: number;
+  last_step: number;
+  states: number;
+  labels: Record<string, number>;
+}
+
+export interface ReplayMeta {
+  source: Source;
+  availability: Availability;
+  run_id: string;
+  total_states: number;
+  step_min: number;
+  step_max: number;
+  feature_count: number;
+  features: string[];
+  sequence_length: number;
+  threshold: number | null;
+  segments: ReplaySegment[];
+  capture_days: string[];
+  manifest: Record<string, unknown>;
+  table_path?: string;
+  limitations: string[];
+}
+
+export interface ReplayFeatureState {
+  feature: string;
+  position: number;
+  actual: number;
+  predicted: number;
+  residual: number;
+  absolute_error: number;
+  history: number[];
+}
+
+export interface ReplayContributor {
+  rank: number;
+  feature: string;
+  signed_residual: number | null;
+  absolute_error: number | null;
+  contribution_percent: number | null;
+}
+
+export interface ReplayFeatureRow {
+  feature: string;
+  actual: number;
+  predicted: number;
+  residual: number;
+  absolute_error: number;
+}
+
+export interface ReplayState {
+  source: Source;
+  availability: Availability;
+  run_id: string;
+  state: {
+    step: number;
+    index: number;
+    total_states: number;
+    timestamp: string | null;
+    capture_day: string | null;
+    segment_id: string;
+    dataset_label: string;
+    residual: number | null;
+    priority: Priority;
+    threshold: number | null;
+    sequence_length: number;
+    feature_count: number;
+  } | null;
+  features: ReplayFeatureState[];
+  available_features: string[];
+  contributors: ReplayContributor[];
+  feature_table?: ReplayFeatureRow[];
+  limitations: string[];
+}
+
+export interface ReplaySeriesPoint {
+  index: number;
+  step: number;
+  timestamp: string | null;
+  label: string;
+  actual: number;
+  predicted: number;
+  residual: number;
+  absolute_error: number;
+  state_mae: number;
+}
+
+export interface ReplaySeries {
+  source: Source;
+  availability: Availability;
+  run_id: string;
+  feature: string;
+  features: string[];
+  points: ReplaySeriesPoint[];
+  stats: {
+    samples: number;
+    mae: number;
+    median_absolute_error: number;
+    max_absolute_error: number;
+    mean_signed_residual: number;
+  };
+  top_errors?: Array<{
+    step: number;
+    index: number;
+    timestamp: string | null;
+    label: string;
+    actual: number;
+    predicted: number;
+    residual: number;
+    absolute_error: number;
+  }>;
+  window: { start: number; end: number; total_states: number };
+  limitations: string[];
+}
+
+export interface ReplayContributorSummary {
+  feature: string;
+  appearances: number;
+  appearance_percent: number;
+}
+
 export interface Health {
   status: "ok" | "degraded" | "failed";
   version: string;
