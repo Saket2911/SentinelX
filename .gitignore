@@ -38,3 +38,11 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Application runtime state (analyst workflow, uploads, generated reports)
+var/
+
+# Frontend dependencies and build output
+node_modules/
+frontend/dist/
+*.tsbuildinfo

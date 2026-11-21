@@ -1,0 +1,45 @@
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --bg: #080b11;
+  --bg-elevated: #0c111a;
+  --surface: #0f1622;
+  --surface-raised: #131c2a;
+  --surface-hover: #182334;
+  --border: #1d2938;
+  --border-strong: #2a3a4e;
+
+  /* Text */
+  --text: #e8eef7;
+  --text-secondary: #a8b7ca;
+  --text-muted: #7285a0;
+  --text-inverse: #06121a;
+
+  /* Accents */
+  --accent: #3ed3b6;
+  --accent-strong: #27b39a;
+  --accent-soft: rgba(62, 211, 182, 0.12);
+  --accent-line: rgba(62, 211, 182, 0.35);
+  --info: #5aa9f0;
+  --info-soft: rgba(90, 169, 240, 0.12);
+  --ok: #4ecb8d;
+  --ok-soft: rgba(78, 203, 141, 0.12);
+  --warn: #e6b45c;
+  --warn-soft: rgba(230, 180, 92, 0.12);
+  --danger: #f2646c;
+  --danger-soft: rgba(242, 100, 108, 0.12);
+  --neutral-soft: rgba(168, 183, 202, 0.1);
+
+  /* Type */
+  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+
+  /* Geometry */
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 10px;
+  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 8px 24px rgba(0, 0, 0, 0.25);
+  --sidebar-width: 248px;
+  --topbar-height: 58px;
+}

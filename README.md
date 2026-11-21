@@ -1,195 +1,241 @@
 # SentinelX
-## AI-Driven Automated SOC Analyst and Explainable Threat Triage Engine
 
-SentinelX is a predictive cyber-defence prototype that uses an LSTM-based World Model to learn temporal patterns in network activity and forecast future network states. It also provides residual-based analyst review, explainability, and historical streaming replay.
+**AI-Driven Automated SOC Analyst and Explainable Threat Triage Engine**
 
-## 1. Problem Statement
+SentinelX learns how a network behaves over time and forecasts the next network
+state with an LSTM world model. Residuals between forecast and observation,
+explainability artifacts and dataset reference labels are presented to analysts
+through a SOC console with an auditable review workflow.
 
-Traditional security monitoring often depends on identifying suspicious activity after it has occurred. SentinelX explores predictive network-state modelling to help analysts understand how network behaviour evolves and identify unusual forecasting errors that may deserve further investigation.
+> SentinelX predicts network states. It does **not** output attack
+> classifications, attack stages or attack probabilities. A high prediction
+> residual is a review prompt, never proof of malicious activity.
 
-## 2. Proposed Architecture
+---
 
-NETWORK DATA (CIC-IDS-2018)
-        |
-        v
-FEATURE EXTRACTION
-        |
-        v
-TIMESTAMPED NETWORK STATE REPRESENTATION
-        |
-        v
-TIME-WINDOW SEQUENCES
-        |
-        v
-LSTM WORLD MODEL
-        |
-        v
-NEXT NETWORK STATE PREDICTION
-        |
-        v
-RESIDUAL ANALYSIS AND ANALYST REVIEW
+## 1. What the system does
 
-The model learns:
+```
+CIC-IDS-2018 flow CSVs
+        │  scripts/pipeline (chronology, validation, duplicate/missing audit)
+        ▼
+1-second network states (209 model features + metadata)
+        │  frozen preprocessing: training medians → signed log1p → StandardScaler
+        ▼
+10-state sequences (segment-safe, no cross-segment windows)
+        │
+        ▼
+LSTM World Model  P(S(t+1) | S(t), S(t-1), … S(t-9))
+        │
+        ├── one-step forecast → residual → residual review priority
+        ├── recursive multi-step forecast (1/2/5/10/30 s) vs persistence baseline
+        └── SHAP attributions (global, temporal, Benign/Bot, local)
+                    │
+                    ▼
+SentinelX API (FastAPI)  →  SOC console (React + TypeScript)
+                    │
+                    └── analyst workflow: status, assignee, notes, audit trail
+```
 
-P(S(t+1) | S(t), S(t-1), ..., S(t-9))
+The application surface is split into a structured HTTP API and a single-page
+console. The original Streamlit dashboard (`sentinelx_dashboard.py`) is preserved
+unmodified as the research reference; it is not the product surface.
 
-The model predicts future network-state features. It does not directly predict attack stages or attack probabilities.
+## 2. Repository layout
 
-## 3. Dataset
+```
+backend/                    FastAPI application (services, routers, tests)
+frontend/                   React + TypeScript SOC console (Vite)
+src/sentinelx/              research package: data, features, models, training,
+                            inference, evaluation, explainability
+experiments/run_experiment.py   controlled training experiments with guardrails
+scripts/pipeline|training|evaluation|diagnostics|legacy   research pipeline
+tests/                      Python tests for streaming, SHAP artifacts, metrics
+Models/                     model runs, recorded summaries and reports
+reports/                    evaluation and analyst-facing research reports
+sentinelx_dashboard.py      preserved Streamlit research dashboard
+sentinelx_shap_dashboard.py preserved SHAP artifact loader/view helpers
+.quarantine/                reversible retirement of V1/V2 artifacts
+SENTINELX_MASTER_AUDIT.md   Phase 1 codebase audit and roadmap
+VERIFICATION_REPORT.md      what was executed, with results and gaps
+FEATURE_STATUS.md           implemented / partial / planned checklist
+```
 
-Primary dataset: CSE-CIC-IDS2018.
+Data, NumPy arrays, checkpoints, scalers and SHAP archives are **not** committed
+(see `.gitignore`). The API reports them as unavailable rather than inventing
+values.
 
-The project uses multiple processed CIC-IDS-2018 network traffic captures from the available dataset archive.
+## 3. Quick start
 
-Dataset processing includes:
-- Data loading and validation
-- Chronological splitting
-- Missing and infinite value handling
-- Feature preprocessing and scaling
-- Timestamp-based network-state aggregation
-- Sequence generation
+### 3.1 API
 
-The available archive contains ten capture-day CSV files. The dataset is stored locally and is not included in the source repository.
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r backend/requirements-dev.txt
+cd backend
+../.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
 
-## 4. Technology Stack
+- OpenAPI: `http://127.0.0.1:8000/api/docs`
+- Health: `GET /api/health`
 
-- Python 3.12
-- PyTorch
-- NumPy
-- Pandas
-- Scikit-learn
-- Joblib
-- SHAP
-- Streamlit
+### 3.2 Console
 
-## 5. Machine Learning Model
+```bash
+cd frontend
+npm install
+npm run dev          # http://localhost:5173, proxies /api to 127.0.0.1:8000
+npm run build        # type-check + production bundle in frontend/dist
+```
 
-SentinelX uses an LSTM World Model.
+If `frontend/dist` exists, the API also serves the built console at `/`, so a
+single-process deployment is possible:
 
-V3 configuration:
-- Input features: 209
-- Hidden size: 128
-- LSTM layers: 1
-- Dropout: 0.2
-- Sequence length: 10
-- Prediction horizon: One-step-ahead
+```bash
+cd backend && ../.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+# console: http://127.0.0.1:8000/
+```
 
-The model predicts the next network state using the previous ten network-state observations.
+### 3.3 Research pipeline (unchanged)
 
-## 6. Model Evaluation
+```bash
+python -m pip install -r requirements.txt      # includes torch, shap, streamlit
+PYTHONPATH=src python -m pytest tests          # metrics/streaming/SHAP tests
+streamlit run sentinelx_dashboard.py           # legacy dashboard (needs artifacts)
+```
 
-Recorded V3 one-step test-partition results:
+## 4. Configuration
 
-| Metric | LSTM | Persistence baseline |
-|---|---:|---:|
-| MAE | 0.320627 | 0.356227 |
-| RMSE | 0.531328 | 0.679033 |
-| Huber loss | 0.120682 | 0.177071 |
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `SENTINELX_ROOT` | repo root | base for default paths |
+| `SENTINELX_MODELS_DIR` | `Models` | model runs (`<run>/config.json`) |
+| `SENTINELX_DATASETS_DIR` | `Datasets` | datasets, scaler, medians, feature JSON |
+| `SENTINELX_REPORTS_DIR` | `reports` | research reports parsed by the API |
+| `SENTINELX_VAR_DIR` | `var` | mutable state: SQLite, uploads, settings, generated reports |
+| `SENTINELX_RUN_ID` | `lstm_world_model_v3_gpu_run2` | default run |
+| `SENTINELX_LOG_LEVEL` | `INFO` | logging level |
+| `SENTINELX_CORS_ORIGINS` | localhost Vite origins | allowed browser origins |
+| `SENTINELX_API_KEY` | unset | when set, mutations require `X-API-Key` |
+| `SENTINELX_MAX_UPLOAD_MB` | `64` | dataset upload limit |
+| `VITE_API_BASE` | `/api` | frontend API base |
+| `SENTINELX_API_TARGET` | `http://127.0.0.1:8000` | Vite dev proxy target |
+| `VITE_ALLOWED_HOSTS` | empty | exact hostnames allowed by the dev server |
 
-These metrics are measured in the preprocessed model feature space.
+Research artifacts are read-only. Everything the application writes lives under
+`var/`.
 
-The test partition has also been used in exploratory analysis. It should not be described as an untouched independent test set.
+## 5. API overview
 
-## 7. Main Implemented Components
+All analytical responses carry `source` (where the bytes came from),
+`availability` (present? if not, exactly which artifacts are missing) and
+`limitations` (interpretation constraints).
 
-- Dataset loading and preprocessing
-- Timestamped network-state construction
-- Sequence generation
-- LSTM World Model training
-- One-step and multi-step forecasting evaluation
-- Residual analysis
-- Feature attribution using SHAP
-- Residual-based analyst triage
-- Contextual MITRE ATT&CK mapping
-- Streaming prediction interface
-- Historical replay and integration validation
+| Area | Endpoints |
+| --- | --- |
+| System | `GET /api/health`, `/api/capabilities`, `/api/system/status`, `/api/runs`, `/api/audit` |
+| Dashboard | `GET /api/dashboard` |
+| Network | `GET /api/network` |
+| Predictions | `GET /api/predictions/summary`, `/api/predictions/series`, `/api/predictions/top-residuals` |
+| Triage | `GET /api/events`, `GET/PATCH /api/events/{id}`, `GET /api/timeline` |
+| Explainability | `GET /api/explainability?label=&output=&sample_index=` |
+| Models | `GET /api/models`, `/api/models/{run}/`, `/api/models/compare`, `POST /api/models/{run}/activate`, `GET /api/models/{run}/inference-status`, `POST /api/models/{run}/predict[/raw]` |
+| Datasets | `GET /api/datasets`, `GET /api/datasets/validate`, `POST /api/datasets/upload` |
+| Reports | `GET/POST /api/reports`, `GET /api/reports/{id}`, `GET /api/reports/{id}/download` |
+| Settings | `GET/PUT /api/settings` |
 
-## 8. Streaming and Historical Replay
+Mutating endpoints (`PATCH /events/{id}`, `POST /reports`, `POST /datasets/upload`,
+`POST /models/{run}/activate`, `POST .../predict`, `PUT /settings`) require
+`X-API-Key` when `SENTINELX_API_KEY` is configured.
 
-The streaming predictor accepts already-aggregated, timestamped network-state rows containing 209 model features.
+## 6. Model card (V3, active research candidate)
 
-It maintains a sequence of ten observations and generates a next-state prediction when sufficient consecutive observations are available.
+| Item | Value |
+| --- | --- |
+| Architecture | LSTM world model, input 209 → hidden 128 → output 209 |
+| Layers / dropout | 1 / 0.2 (dropout before the linear head) |
+| Sequence | 10 one-second states |
+| Training | AdamW, Huber loss, lr 1e-3, batch 128, ≤30 epochs, patience 6, seed 42 |
+| Best epoch | 11 (validation Huber 0.43094) |
+| Data | 197,389 train / 50,870 validation sequences, GTX 1050 3 GB |
 
-Historical replay was evaluated using 31,406 observations from the existing V3 test partition.
+Recorded held-out test comparison (31,406 sequences, standardized model space):
 
-The streaming implementation is a prototype. It does not directly ingest raw packets or provide live packet capture.
+| Metric | LSTM | Persistence | Improvement |
+| --- | ---: | ---: | ---: |
+| MAE | 0.320627 | 0.356227 | 9.99 % |
+| RMSE | 0.531328 | 0.679033 | 21.75 % |
+| Huber | 0.120682 | 0.177071 | 31.85 % |
 
-## 9. Explainability and Threat Triage
+**Caveats, preserved deliberately:**
+- The test partition was already used for exploratory analysis; it is not an
+  untouched independent test.
+- The frozen residual threshold (1.88139677 = benign validation p99) recalled
+  **0 of the labelled Bot observations** on test (precision 0, specificity 1).
+  It ranks observations for review; it is not a validated detector.
+- Validation and test partitions have different label coverage; `Bot` is absent
+  from training.
+- Metrics are in preprocessed model feature space, not raw units.
 
-SentinelX uses prediction residuals to identify observations that may require analyst review.
+Version separation is enforced: V3 uses 209 features and
+`sentinelx_standard_scaler_v3.joblib`; V2/V1 used 212 features and are
+quarantined. Runs are never blended.
 
-SHAP is used to study input-feature contributions to selected predicted state features.
+## 7. Model improvement work added here
 
-MITRE ATT&CK mappings provide contextual references for dataset labels. They are not definitive attack classifications produced by the LSTM.
+- `src/sentinelx/evaluation/forecast_metrics.py` — MAE/MSE/RMSE/Huber, per-feature
+  and per-label errors, error quantiles, persistence baseline, recursive
+  multi-step forecasting and evaluation, benign-only threshold calibration, and
+  descriptive detection metrics. NumPy only, fully unit-tested.
+- `src/sentinelx/models/variants.py` — `baseline_v3`, `residual_head`
+  (persistence-prior delta head) and `stacked_two` variants for controlled tests.
+- `src/sentinelx/training/experiments.py` — reproducible training with warmup +
+  cosine schedule, gradient clipping, weight decay, early stopping, per-experiment
+  checkpoint directories, and a conservative promotion guardrail (validation only;
+  a test-partition flag blocks promotion).
+- `experiments/run_experiment.py` — CLI that refuses to run without the real
+  sequence arrays and never overwrites an existing checkpoint.
 
-## 10. Project Structure
+Measured numbers for new variants are intentionally absent: this environment has
+no `Datasets/` arrays and no GPU, so the harness is delivered ready to run rather
+than reported with fabricated results.
 
-The repository has been reorganized into a stable layout that keeps the preserved research pipeline and generated artifacts intact while separating active code from historical analysis scripts.
+## 8. Testing
 
-- `src/sentinelx/` - Active model, feature, training, inference, evaluation, and explainability code
-- `data/raw/`, `data/interim/`, `data/processed/`, `data/sequences/` - Current data lifecycle directories
-- `scripts/pipeline/` - Primary dataset and feature construction scripts
-- `scripts/training/` - Model training and benchmarking scripts
-- `scripts/evaluation/` - Forecasting, residual, and explainability evaluation scripts
-- `scripts/diagnostics/` - Dataset integrity and capture validation tools
-- `scripts/analysis/` - Research analysis scripts
-- `scripts/legacy/` - Retained V3 analysis and source-partition tooling
-- `.quarantine/v1-v2-retirement-20261117/` - Reversible quarantine of obsolete V1/V2 scripts and generated artifacts; nothing has been permanently deleted
-- `Datasets/` - Local datasets, raw archives, generated arrays, and metadata
-- `Models/` - Trained models and checkpoints, including the preserved V3 run
-- `reports/` - Evaluation and analyst-facing reports
-- `tests/` - Automated validation tests
-- `sentinelx_dashboard.py` - Streamlit dashboard prototype
+```bash
+# research metrics / streaming / SHAP helpers
+.venv/bin/python -m pytest                 # 50 tests
 
-A zero-byte extract from the original CIC-IDS archive was repaired by restoring the exact bytes from `Datasets/archive.zip` into `Datasets/archive/03-02-2018.csv` without modifying the source archive.
+# backend API + services
+cd backend && ../.venv/bin/python -m pytest   # 24 tests
 
-## 11. Installation
+# frontend type-check + production build
+cd frontend && npm run build
+```
 
-Create and activate a Python virtual environment.
+`tests/test_v3_edge_cases.py` and `tests/test_v3_integration.py` are manual
+end-to-end scripts (they execute at import and need `Datasets/` plus
+`best_model.pt`); they are excluded from automatic collection and can be run
+directly once artifacts exist.
 
-Install the dependencies:
+## 9. Limitations
 
-    python -m pip install -r requirements.txt
+- Live capture, PCAP parsing and Zeek ingestion are **not implemented**. Streaming
+  inference consumes pre-aggregated 209-feature state rows.
+- Inference requires a local `.pt` checkpoint plus the frozen scaler/median/feature
+  artifacts; git does not carry them.
+- Row-level pages require the replay/triage/explanation CSVs produced by the
+  research scripts; the API names the missing artifact instead of showing zeros.
+- Residual triage is a heuristic with poor measured recall; dataset labels are
+  reference annotations.
+- MITRE ATT&CK mappings are contextual candidates for dataset labels, not
+  per-observation classifications.
+- The quarantine directory keeps retired V1/V2 code for reproducibility; it is not
+  executed by the application.
 
-The recorded development environment used Python 3.12.16 and a CPU PyTorch build. GPU execution requires a compatible PyTorch installation and CUDA environment.
+## 10. Documentation
 
-The dataset and trained model artifacts must be available locally before running the complete pipeline.
-
-## 12. Testing
-
-Run the automated streaming tests:
-
-    # POSIX shells
-    PYTHONPATH=src python -m unittest discover -s tests -p 'test_*.py' -v
-
-    # PowerShell
-    $env:PYTHONPATH='src'; python -m unittest discover -s tests -p 'test_*.py' -v
-
-Compile the source package:
-
-    python -m compileall -q src/sentinelx
-
-## 13. Limitations
-
-- The system is a research and demonstration prototype, not a production SOC deployment.
-- Forecasting errors are not proof of malicious activity.
-- Low forecasting errors do not guarantee benign activity.
-- Residual-based triage is not a validated standalone intrusion detector.
-- MITRE ATT&CK mappings are contextual and depend on supporting evidence.
-- Streaming inference expects preprocessed network-state rows rather than raw packet captures.
-- Historical replay does not establish live-network performance.
-- Additional independent compatible capture evaluation is unavailable with the current dataset collection.
-
-## 14. Future Work
-
-- Integrate raw network capture feature extraction with streaming inference.
-- Evaluate additional compatible network datasets.
-- Improve residual-based analyst review using independent validation data.
-- Complete and validate the interactive SOC dashboard.
-- Evaluate deployment performance in a controlled environment.
-
-## 15. Project Status
-
-SentinelX has completed its core V3 model development, forecasting evaluation, streaming prototype, historical replay, explainability analysis, and integrated triage prototype.
-
-The dashboard and final end-to-end presentation workflow require final verification.
+- `SENTINELX_MASTER_AUDIT.md` — Phase 1 audit, defects, risk register, roadmap
+- `VERIFICATION_REPORT.md` — commands executed and their exact results/gaps
+- `FEATURE_STATUS.md` — implemented / partial / planned checklist
+- `reports/` — research evaluation reports retained from the original pipeline
