@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import io
 
+import pandas as pd
 from fastapi.testclient import TestClient
+
+from app.services.artifacts import ArtifactStore
+from app.services.network import overview as network_overview
+from app.services.replay import load_replay
 
 from .conftest import RUN_ID, THRESHOLD
 
@@ -37,6 +42,35 @@ def test_dashboard_composes_fixture_artifacts(client: TestClient) -> None:
     assert body["label_distribution"]
     assert body["recent_events"]
     assert body["model_health"]["run_id"] == RUN_ID
+
+
+def test_labels_are_joined_when_explainable_table_omits_them(workspace) -> None:
+    """The real explainable-triage artifact has no label column.
+
+    Labels must come from the replay artifact instead of every row being
+    reported as attack-labelled or unknown.
+    """
+
+    run = workspace.models_dir / RUN_ID
+    explainable_path = run / "explainable_triage_v2" / "explainable_triage.csv"
+    explainable = pd.read_csv(explainable_path)
+    labels = explainable.pop("Target Label")
+    explainable.to_csv(explainable_path, index=False)
+    pd.DataFrame(
+        {"Replay Step": range(1, len(labels) + 1), "Target Label": labels}
+    ).to_csv(run / "historical_replay_v1" / "test_replay.csv", index=False)
+
+    store = ArtifactStore(
+        workspace.models_dir, workspace.reports_dir, workspace.datasets_dir
+    )
+    replay = load_replay(store, RUN_ID)
+    assert replay is not None
+    assert replay.labels().value_counts().to_dict() == {"Benign": 20, "Bot": 10}
+
+    body = network_overview(store, RUN_ID)
+    assert body["totals"]["benign_observations"] == 20
+    assert body["totals"]["attack_labelled_observations"] == 10
+    assert body["totals"]["unknown_labelled_observations"] == 0
 
 
 def test_empty_deployment_reports_unavailable_not_zero(empty_client: TestClient) -> None:

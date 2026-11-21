@@ -173,8 +173,12 @@ def overview(store: ArtifactStore, run_id: str) -> dict[str, Any]:
     label_counts = labels.value_counts()
     total = int(label_counts.sum())
     benign_like = {"benign", "no flows", "normal"}
+    unknown_like = {"unknown", "", "nan", "none"}
     benign = int(
         sum(count for name, count in label_counts.items() if str(name).lower() in benign_like)
+    )
+    unknown = int(
+        sum(count for name, count in label_counts.items() if str(name).lower() in unknown_like)
     )
     label_distribution = [
         {"name": str(name), "count": int(count), "share": round(int(count) / max(total, 1), 4)}
@@ -285,7 +289,8 @@ def overview(store: ArtifactStore, run_id: str) -> dict[str, Any]:
         "totals": {
             "observations": total,
             "benign_observations": benign,
-            "attack_labelled_observations": total - benign,
+            "attack_labelled_observations": total - benign - unknown,
+            "unknown_labelled_observations": unknown,
             "review_candidates": review_candidates,
             "segments": int(segments.nunique()),
             "capture_days": capture_days,

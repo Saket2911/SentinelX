@@ -9,7 +9,7 @@ missing column becomes ``None`` and the caller can degrade explicitly.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import pandas as pd
 
@@ -130,7 +130,13 @@ class ReplayFrame:
 
     def labels(self) -> pd.Series:
         if self.columns.label:
-            return self.frame[self.columns.label].astype(str).fillna("UNKNOWN")
+            values = (
+                self.frame[self.columns.label]
+                .fillna("UNKNOWN")
+                .astype(str)
+                .str.strip()
+            )
+            return values.mask(values.str.lower().isin({"", "nan", "none"}), "UNKNOWN")
         return pd.Series(["UNKNOWN"] * len(self.frame), index=self.frame.index)
 
     def timestamps(self) -> pd.Series:
@@ -145,6 +151,65 @@ class ReplayFrame:
         return pd.Series(["unknown"] * len(self.frame), index=self.frame.index)
 
 
+JOIN_KEYS = ("target state row", "replay step", "step", "observation")
+
+
+def _join_key(columns) -> str | None:
+    lowered = {str(column).strip().lower(): str(column) for column in columns}
+    for candidate in JOIN_KEYS:
+        if candidate in lowered:
+            return lowered[candidate]
+    return None
+
+
+def _attach_labels(
+    store: ArtifactStore,
+    run_id: str,
+    frame: pd.DataFrame,
+    columns: ReplayColumnMap,
+) -> tuple[pd.DataFrame, ReplayColumnMap]:
+    """Supply labels when the preferred table does not carry them.
+
+    The explainable-triage artifact is preferred for its residual and
+    contributor columns, but some research pipeline versions wrote it without
+    the dataset label. The replay artifact covers the same held-out rows and
+    does carry labels, so join them by state row (or position) instead of
+    reporting every row as unknown.
+    """
+    if columns.label:
+        return frame, columns
+    labelled = store.read_table(run_id, "replay")
+    if labelled is None or labelled.empty:
+        return frame, columns
+    labelled_columns = resolve_columns(labelled)
+    if not labelled_columns.label:
+        return frame, columns
+
+    values = (
+        labelled[labelled_columns.label]
+        .fillna("UNKNOWN")
+        .astype(str)
+        .str.strip()
+    )
+    joined: pd.Series | None = None
+    left_key = _join_key(frame.columns)
+    right_key = _join_key(labelled.columns)
+    if left_key and right_key:
+        mapping = pd.Series(values.to_numpy(), index=labelled[right_key].to_numpy())
+        mapping = mapping[~mapping.index.duplicated(keep="first")]
+        candidate = frame[left_key].map(mapping)
+        if candidate.notna().all():
+            joined = candidate
+    if joined is None and len(frame) == len(labelled):
+        joined = pd.Series(values.to_numpy(), index=frame.index)
+    if joined is None:
+        return frame, columns
+
+    enriched = frame.copy()
+    enriched["Dataset Label"] = joined.to_numpy()
+    return enriched, replace(columns, label="Dataset Label")
+
+
 def load_replay(store: ArtifactStore, run_id: str) -> ReplayFrame | None:
     """Load the preferred row-level table for a run.
 
@@ -155,9 +220,12 @@ def load_replay(store: ArtifactStore, run_id: str) -> ReplayFrame | None:
         table = store.read_table(run_id, key)
         if table is not None and not table.empty:
             artifact = store.run(run_id).table(key)
+            frame, columns = _attach_labels(
+                store, run_id, table, resolve_columns(table)
+            )
             return ReplayFrame(
-                frame=table,
-                columns=resolve_columns(table),
+                frame=frame,
+                columns=columns,
                 path=str(artifact.path) if artifact else key,
             )
     return None

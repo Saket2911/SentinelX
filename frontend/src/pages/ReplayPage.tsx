@@ -550,6 +550,11 @@ export function ReplayPage() {
                   <Pill tone="neutral">
                     {number(anomalies.data.benign_labelled_states)} benign-labelled
                   </Pill>
+                  {anomalies.data.unknown_labelled_states > 0 ? (
+                    <Pill tone="neutral">
+                      {number(anomalies.data.unknown_labelled_states)} unknown label
+                    </Pill>
+                  ) : null}
                   <Pill tone="info">
                     {number(anomalies.data.summary.persisted_alerts)} persisted alert(s)
                   </Pill>

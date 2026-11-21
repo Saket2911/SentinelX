@@ -190,6 +190,20 @@ now scans the whole replay on page load (one idempotent request) and always show
 the replay-wide review queue, so rule hits are found without stepping through
 tens of thousands of states.
 
+### Why the dashboard showed every state as attack-labelled
+
+The preferred row-level artifact is `explainable_triage.csv`, which carries the
+residual and contributor columns but — in the shipped V3 run — no dataset label
+column. `ReplayFrame.labels()` therefore returned `UNKNOWN` for all 31,406 rows,
+and the network summary counted every row that was not literally “Benign” as an
+attack. The labels do exist in `historical_replay_v1/test_replay.csv`, which
+covers the same held-out rows.
+
+The replay loader now joins the label column from the replay artifact by
+`Target State Row` (falling back to positional alignment when both tables have
+the same length). Unknown or empty labels are a separate category and are never
+counted as attacks.
+
 ## 9. Frontend integration
 
 - **Network Playback**: debounced one-request-per-settled-position evaluation;
@@ -213,7 +227,7 @@ tens of thousands of states.
 
 ## 10. Tests executed
 
-Command: `cd backend && ../.venv/bin/python -m pytest tests -q` → **56 passed**
+Command: `cd backend && ../.venv/bin/python -m pytest tests -q` → **57 passed**
 Command: `.venv/bin/python -m pytest tests -q` (root) → **50 passed**
 Command: `cd frontend && npx tsc --noEmit` → clean
 Command: `cd frontend && npm run build` → success (existing chunk-size warning only)
@@ -248,6 +262,8 @@ New tests include:
 25. Scan finds persistence-rule candidates.
 26. Anomaly history exposes a top-state review queue and label summary even when
     zero states are flagged.
+27. When the explainable-triage table has no label column, labels are joined from
+    the replay artifact and benign/attack counts stay correct.
 
 Regression suites (playback, events, dashboard, auth, model registry, dataset
 contracts, explainability) all pass.
@@ -343,3 +359,5 @@ step (`2, 3, 4, 5, 8`) with no duplicate step requests and no duplicate alerts.
 - The automatic replay scan persists at most 500 rule hits per request by default;
   larger deployments should page or schedule it. It runs when the playback page
   loads, not continuously in the background.
+- If neither the preferred table nor the replay artifact carries a label column,
+  states remain `UNKNOWN`; they are reported as unknown, never as attacks.

@@ -338,6 +338,7 @@ export interface NetworkOverview {
     observations?: number;
     benign_observations?: number;
     attack_labelled_observations?: number;
+    unknown_labelled_observations?: number;
     review_candidates?: number;
     segments?: number;
     capture_days?: string[];
@@ -562,6 +563,7 @@ export interface AnomalySeries {
   label_summary: Record<string, number>;
   attack_labelled_states: number;
   benign_labelled_states: number;
+  unknown_labelled_states: number;
   summary: {
     states: number;
     mean_score: number;

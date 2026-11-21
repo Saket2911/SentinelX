@@ -647,15 +647,22 @@ def anomaly_series(
         for position in range(bundle.total)
     ]
     ordered = np.argsort(-scores, kind="stable")
-    benign_names = {"benign", "normal", "no flows", "unknown", ""}
+    benign_names = {"benign", "normal", "no flows"}
+    unknown_names = {"unknown", "", "nan", "none"}
     label_counts: dict[str, int] = {}
     for label in bundle.labels:
         label_counts[label] = label_counts.get(label, 0) + 1
-    attack_labelled = sum(
+    benign_labelled = sum(
         count
         for label, count in label_counts.items()
-        if label.strip().lower() not in benign_names
+        if label.strip().lower() in benign_names
     )
+    unknown_labelled = sum(
+        count
+        for label, count in label_counts.items()
+        if label.strip().lower() in unknown_names
+    )
+    attack_labelled = int(bundle.total) - benign_labelled - unknown_labelled
     top_states = [
         {
             "step": int(bundle.steps[int(position)]),
@@ -687,7 +694,8 @@ def anomaly_series(
         "top_states": top_states,
         "label_summary": label_counts,
         "attack_labelled_states": attack_labelled,
-        "benign_labelled_states": int(bundle.total) - attack_labelled,
+        "benign_labelled_states": benign_labelled,
+        "unknown_labelled_states": unknown_labelled,
         "summary": {
             "states": bundle.total,
             "mean_score": float(scores.mean()),
