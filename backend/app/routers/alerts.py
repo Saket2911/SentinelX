@@ -83,6 +83,23 @@ def list_alerts(
     }
 
 
+@router.post(
+    "/playback/alerts/scan",
+    summary="Scan the whole replay for rule-matching alerts (idempotent)",
+    dependencies=[Depends(require_write_access)],
+)
+def scan_alerts(
+    request: Request,
+    run_id: str | None = None,
+    limit: int = Query(default=500, ge=1, le=2000),
+    store: ArtifactStore = Depends(get_store),
+    database=Depends(get_database),
+) -> dict:
+    return alerts_service.scan_replay(
+        store, database, _run(request, run_id, store), limit=limit
+    )
+
+
 @router.get("/playback/alerts/{alert_id}", summary="Alert detail with evidence and audit trail")
 def get_alert(
     alert_id: str,

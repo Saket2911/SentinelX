@@ -1315,6 +1315,12 @@ table.table {
 }
 
 .timeline-marker.medium { background: var(--warn); }
+.timeline-marker.candidate {
+  background: transparent;
+  border: 2px solid var(--warn);
+  width: 11px;
+  height: 11px;
+}
 .timeline-marker.high { background: var(--orange, #F97316); }
 .timeline-marker.critical { background: var(--danger); }
 

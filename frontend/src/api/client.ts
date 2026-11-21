@@ -183,6 +183,11 @@ export const api = {
     }),
   anomalySeries: (runId?: string) =>
     request<AnomalySeries>(`/playback/anomalies${query({ run_id: runId })}`),
+  scanPlaybackAlerts: (runId?: string, limit = 500) =>
+    request<import("./types").PlaybackScan>(
+      `/playback/alerts/scan${query({ run_id: runId, limit })}`,
+      { method: "POST" },
+    ),
 
   replayContributors: (limit = 15, runId?: string) =>
     request<{ run_id: string; contributors: ReplayContributorSummary[]; source: string | null; total_states: number | null }>(

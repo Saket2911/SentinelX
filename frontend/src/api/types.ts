@@ -549,6 +549,19 @@ export interface AnomalySeries {
     flagged: boolean;
     alert_id: string | null;
   }>;
+  top_states: Array<{
+    step: number;
+    timestamp: string | null;
+    segment_id: string;
+    label: string;
+    anomaly_score: number;
+    ratio: number | null;
+    flagged: boolean;
+    alert_id: string | null;
+  }>;
+  label_summary: Record<string, number>;
+  attack_labelled_states: number;
+  benign_labelled_states: number;
   summary: {
     states: number;
     mean_score: number;
@@ -556,6 +569,19 @@ export interface AnomalySeries {
     flagged: number;
     persisted_alerts: number;
   };
+  limitations: string[];
+}
+
+export interface PlaybackScan {
+  run_id: string;
+  threshold: number | null;
+  scanned_states: number;
+  candidate_states: number[];
+  candidates: number;
+  created: number;
+  alerts: PlaybackAlert[];
+  persisted: number;
+  limited: boolean;
   limitations: string[];
 }
 

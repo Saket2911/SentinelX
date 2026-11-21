@@ -279,6 +279,46 @@ def test_anomaly_series_reports_threshold_and_flagged_states(
     assert payload["method"] == "mean_absolute_residual"
 
 
+def test_anomaly_series_exposes_review_queue_without_alerts(client: TestClient) -> None:
+    payload = client.get("/api/playback/anomalies").json()
+
+    assert payload["summary"]["flagged"] == 0
+    assert payload["attack_labelled_states"] == 10
+    assert payload["benign_labelled_states"] == 20
+    assert payload["label_summary"] == {"Benign": 20, "Bot": 10}
+    assert len(payload["top_states"]) == 25
+    assert payload["top_states"][0]["step"]
+    assert payload["top_states"][0]["anomaly_score"] > 0
+    assert payload["top_states"][0]["ratio"] is not None
+
+
+def test_scan_finds_and_persists_alerts_without_playback(
+    workspace, client: TestClient
+) -> None:
+    _rewrite_predictions(workspace, {7: 4.0})
+
+    first = client.post("/api/playback/alerts/scan").json()
+    assert first["scanned_states"] == 30
+    assert first["candidate_states"] == [8]
+    assert first["created"] == 1
+    assert first["persisted"] == 1
+    assert first["alerts"][0]["target_step"] == 8
+
+    second = client.post("/api/playback/alerts/scan").json()
+    assert second["created"] == 0
+    assert second["persisted"] == 1
+
+
+def test_scan_finds_persistence_candidates(workspace, client: TestClient) -> None:
+    _rewrite_predictions(workspace, {4: 1.6, 5: 1.6, 6: 1.6})
+    payload = client.post("/api/playback/alerts/scan").json()
+
+    assert 7 in payload["candidate_states"]
+    assert payload["created"] == 1
+    assert payload["alerts"][0]["target_step"] == 7
+    assert payload["alerts"][0]["severity"] == "high"
+
+
 def test_dashboard_includes_real_alert_metrics(workspace, client: TestClient) -> None:
     baseline = client.get("/api/dashboard").json()
     assert baseline["alerts"]["total"] == 0

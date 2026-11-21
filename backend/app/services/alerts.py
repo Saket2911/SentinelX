@@ -646,6 +646,29 @@ def anomaly_series(
         }
         for position in range(bundle.total)
     ]
+    ordered = np.argsort(-scores, kind="stable")
+    benign_names = {"benign", "normal", "no flows", "unknown", ""}
+    label_counts: dict[str, int] = {}
+    for label in bundle.labels:
+        label_counts[label] = label_counts.get(label, 0) + 1
+    attack_labelled = sum(
+        count
+        for label, count in label_counts.items()
+        if label.strip().lower() not in benign_names
+    )
+    top_states = [
+        {
+            "step": int(bundle.steps[int(position)]),
+            "timestamp": bundle.timestamps[int(position)],
+            "segment_id": bundle.segments[int(position)],
+            "label": bundle.labels[int(position)],
+            "anomaly_score": float(scores[int(position)]),
+            "ratio": float(scores[int(position)] / threshold) if threshold else None,
+            "flagged": bool(threshold is not None and scores[int(position)] >= threshold),
+            "alert_id": persisted.get(int(bundle.steps[int(position)])),
+        }
+        for position in ordered[:25]
+    ]
     return {
         "source": {
             "mode": "dataset",
@@ -661,6 +684,10 @@ def anomaly_series(
         "flagged_steps": flagged,
         "alert_steps": sorted(persisted),
         "points": points,
+        "top_states": top_states,
+        "label_summary": label_counts,
+        "attack_labelled_states": attack_labelled,
+        "benign_labelled_states": int(bundle.total) - attack_labelled,
         "summary": {
             "states": bundle.total,
             "mean_score": float(scores.mean()),
@@ -668,6 +695,66 @@ def anomaly_series(
             "flagged": len(flagged),
             "persisted_alerts": len(persisted),
         },
+        "limitations": LIMITATIONS,
+    }
+
+
+def scan_replay(
+    store: ArtifactStore,
+    database: Database,
+    run_id: str,
+    limit: int = 500,
+) -> dict[str, Any]:
+    """Find every state that satisfies the alert rules without visiting them.
+
+    Playback at high speed cannot evaluate all 30k+ states individually, so the
+    whole replay is scanned against the same vectorized score and rules, and only
+    matching states are persisted (idempotently).
+    """
+
+    bundle = replay_bundle(store, run_id)
+    _ensure_contract(store, run_id, bundle)
+    threshold = bundle.threshold
+    config = rules()
+    window = int(config["persistence_window"])
+    elevated_ratio = float(config["elevated_ratio"])
+    scores = np.abs(bundle.actual - bundle.predictions).mean(axis=1)
+    candidate_positions: list[int] = []
+    for position in range(bundle.total):
+        single = threshold is not None and scores[position] >= threshold
+        first = max(0, position - window + 1)
+        recent = scores[first : position + 1]
+        segments = bundle.segments[first : position + 1]
+        persistence = (
+            threshold is not None
+            and len(recent) >= window
+            and len(set(segments)) <= 1
+            and bool((recent >= threshold * elevated_ratio).all())
+        )
+        if single or persistence:
+            candidate_positions.append(position)
+            if len(candidate_positions) >= limit:
+                break
+
+    created = 0
+    alerts: list[dict[str, Any]] = []
+    for position in candidate_positions:
+        result = evaluate_target(store, database, run_id, int(bundle.steps[position]))
+        alert = result.get("alert")
+        if alert:
+            alerts.append(alert)
+            if not result.get("deduplicated"):
+                created += 1
+    return {
+        "run_id": run_id,
+        "threshold": threshold,
+        "scanned_states": bundle.total,
+        "candidate_states": [int(bundle.steps[p]) for p in candidate_positions],
+        "candidates": len(candidate_positions),
+        "created": created,
+        "alerts": alerts,
+        "persisted": len(database.playback_alerts_for_run(run_id)),
+        "limited": len(candidate_positions) >= limit,
         "limitations": LIMITATIONS,
     }
 

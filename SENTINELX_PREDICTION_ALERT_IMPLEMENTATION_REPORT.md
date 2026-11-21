@@ -170,6 +170,7 @@ Endpoints:
 | Method | Path | Purpose |
 | --- | --- | --- |
 | POST | `/api/playback/evaluate` | Score a target step; generate/persist alert if rules met (idempotent) |
+| POST | `/api/playback/alerts/scan` | Vectorized scan of the whole replay for all rule-matching states; persists idempotently (capped at 500 by default) |
 | GET | `/api/playback/alerts` | List filters: run, status, severity, dataset_id, target_step, since, until, limit, offset |
 | GET | `/api/playback/alerts/{id}` | Alert detail, evidence, SHAP context and audit history |
 | PATCH | `/api/playback/alerts/{id}` | Update investigation status/assignee/notes (audited) |
@@ -178,6 +179,17 @@ Endpoints:
 Duplicate prevention is enforced in SQLite; a repeat evaluation returns the
 existing alert with `deduplicated: true`.
 
+### Why a playthrough could show no alerts
+
+The calibrated threshold is the validation-benign p99 (`1.8814`) and the recorded
+test evaluation had **recall 0.0** at it. In the observed capture, typical scores
+sit around 0.28, so most states never satisfy the rule. A session that only
+records alerts it personally visited therefore shows an empty list — even though
+31k states exist and one review candidate may sit anywhere in them. The console
+now scans the whole replay on page load (one idempotent request) and always shows
+the replay-wide review queue, so rule hits are found without stepping through
+tens of thousands of states.
+
 ## 9. Frontend integration
 
 - **Network Playback**: debounced one-request-per-settled-position evaluation;
@@ -185,7 +197,10 @@ existing alert with `deduplicated: true`.
   markers that seek to the alert; session alert history; evidence drawer with
   predicted vs actual features, threshold ratio, trigger, references, SHAP context
   and investigation workflow. Pause/resume does not re-evaluate; reset/replay/seek
-  reuse the persisted alert.
+  reuse the persisted alert. A **replay-wide scan** runs once per run, so alerts
+  are found even at 8× where individual states would be skipped. A **Replay review
+  queue** lists the highest-residual states, dataset reference-label counts,
+  threshold crossings, persisted alerts and links to Timeline/Triage.
 - **Predictive Intelligence**: anomaly score chart with frozen threshold,
   flagged-state markers, persisted-alert markers, counts and links to replay.
 - **Threat Triage**: generated alert table with status, severity and the same
@@ -198,7 +213,7 @@ existing alert with `deduplicated: true`.
 
 ## 10. Tests executed
 
-Command: `cd backend && ../.venv/bin/python -m pytest tests -q` → **53 passed**
+Command: `cd backend && ../.venv/bin/python -m pytest tests -q` → **56 passed**
 Command: `.venv/bin/python -m pytest tests -q` (root) → **50 passed**
 Command: `cd frontend && npx tsc --noEmit` → clean
 Command: `cd frontend && npm run build` → success (existing chunk-size warning only)
@@ -228,6 +243,11 @@ New tests include:
 20. Segment boundary handling.
 21. V2/V3 contract mismatch rejection.
 22. Filters by step, dataset and timestamp bounds.
+23. Replay-wide scan finds and persists threshold candidates without playback.
+24. Repeat scan creates no duplicates.
+25. Scan finds persistence-rule candidates.
+26. Anomaly history exposes a top-state review queue and label summary even when
+    zero states are flagged.
 
 Regression suites (playback, events, dashboard, auth, model registry, dataset
 contracts, explainability) all pass.
@@ -263,6 +283,20 @@ Verified in the browser (Chromium, 1600px):
     step 8 link and persisted-alert count.
 12. All 12 routes loaded with zero page/console errors after the change.
 
+Replay-wide scan checks (clean fixture with no threshold crossing):
+
+- Playback page auto-scanned 30 states and reported “no state satisfied the
+  calibrated alert rules”.
+- The review queue still listed the highest-residual states and the reference-label
+  split (10 attack-labelled / 20 benign-labelled), with an explicit note that
+  labels are annotations, not detections, and that recorded recall at this
+  threshold is 0.
+- After offsetting one fixture state, reloading playback auto-created exactly one
+  alert (step 8), showed it in the queue with “Open alert”, and applied it to
+  Threat Triage (High, 1) and SOC metrics (1 total / 1 high / 1 unresolved) without
+  any manual step-by-step playthrough.
+- A second scan created no duplicate.
+
 Request-log check during play/pause/resume/seek: evaluations were one per settled
 step (`2, 3, 4, 5, 8`) with no duplicate step requests and no duplicate alerts.
 
@@ -280,6 +314,7 @@ step (`2, 3, 4, 5, 8`) with no duplicate step requests and no duplicate alerts.
 | Idempotent alert persistence + dedupe | **Verified** |
 | Alert APIs (evaluate/list/detail/update/history/filters) | **Verified** |
 | Playback alert UI, markers, notifications, detail | **Verified** (fixture) |
+| Replay-wide scan + review queue (no playthrough needed) | **Verified** |
 | Predictive Intelligence anomaly view | **Verified** |
 | Threat Triage alert workflow | **Verified** |
 | SOC Overview alert metrics/trend | **Verified** |
@@ -305,3 +340,6 @@ step (`2, 3, 4, 5, 8`) with no duplicate step requests and no duplicate alerts.
 - Alert time filtering is ISO string-based and does not parse time zones.
 - The alert DB is local SQLite; there is no multi-user notification transport.
 - Playback is historical dataset replay, never presented as live monitoring.
+- The automatic replay scan persists at most 500 rule hits per request by default;
+  larger deployments should page or schedule it. It runs when the playback page
+  loads, not continuously in the background.
